@@ -1,13 +1,598 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// ======================
+// ENUMS
+// ======================
+
+enum RolUsuario {
+  ADMINISTRADOR
+  EGRESADO
+  EMPRESA
+}
+
+enum EstadoUsuario {
+  ACTIVO
+  PENDIENTE
+  SUSPENDIDO
+}
+
+enum ProveedorAuth {
+  CREDENCIALES
+  GOOGLE
+}
+
+enum TipoHabilidad {
+  TECNICA
+  BLANDA
+}
+
+enum NivelHabilidad {
+  BASICO
+  INTERMEDIO
+  AVANZADO
+  EXPERTO
+}
+
+enum EstadoValidacionEmpresa {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
+}
+
+enum ModalidadOferta {
+  REMOTO
+  HIBRIDO
+  PRESENCIAL
+}
+
+enum TipoContrato {
+  TIEMPO_COMPLETO
+  MEDIO_TIEMPO
+  POR_PROYECTO
+  PRACTICAS
+}
+
+enum EstadoOferta {
+  BORRADOR
+  PENDIENTE_REVISION
+  APROBADA
+  RECHAZADA
+  ACTIVA
+  CERRADA
+  EXPIRADA
+}
+
+enum EstadoPostulacion {
+  POSTULADO
+  EN_REVISION
+  ENTREVISTA
+  CONTRATADO
+  RECHAZADO
+}
+
+enum CategoriaArchivo {
+  CV
+  LOGO
+  REPORTE
+  DOCUMENTO
+  AVATAR
+}
+
+enum TipoEntidadArchivo {
+  USUARIO
+  EGRESADO
+  EMPRESA
+  REPORTE
+  SISTEMA
+}
+
+enum TipoReporte {
+  EGRESADOS_POR_CARRERA
+  OFERTAS_ACTIVAS
+  POSTULACIONES_POR_OFERTA
+  EMPLEABILIDAD
+  DEMANDA_LABORAL
+  COMPARATIVO_COHORTES
+}
+
+enum EstadoReporte {
+  PENDIENTE
+  PROCESANDO
+  COMPLETADO
+  FALLIDO
+}
+
+enum CanalNotificacion {
+  INTERNA
+  EMAIL
+}
+
+enum TipoNotificacion {
+  NUEVA_OFERTA
+  POSTULACION_CREADA
+  ESTADO_POSTULACION_CAMBIADO
+  EMPRESA_VALIDADA
+  REPORTE_GENERADO
+  SISTEMA
+}
+
+enum TipoMetrica {
+  KPIS_ADMINISTRADOR
+  EMPLEABILIDAD_POR_CARRERA
+  DEMANDA_HABILIDADES
+  OFERTAS_VS_POSTULACIONES
+  EGRESADOS_POR_CARRERA
+  CONTRATACION_POR_COHORTE
+  POSTULACIONES_POR_ESTADO
+}
+
+// ======================
+// MODELOS
+// ======================
+
+model Usuario {
+  id                String        @id @default(uuid())
+  email             String        @unique
+  passwordHash      String?       @map("password_hash")
+  rol               RolUsuario
+  estado            EstadoUsuario @default(PENDIENTE)
+  proveedorAuth     ProveedorAuth @default(CREDENCIALES) @map("proveedor_auth")
+  proveedorId       String?       @map("proveedor_id")
+  emailVerificadoEn DateTime?     @map("email_verificado_en")
+  ultimoLoginEn     DateTime?     @map("ultimo_login_en")
+  avatarUrl         String?       @map("avatar_url")
+
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  egresado      Egresado?
+  empresa       Empresa?
+  administrador Administrador?
+
+  notificaciones Notificacion[]
+  reportes       Reporte[]
+  auditorias     Auditoria[]
+
+  empresasValidadas Empresa[] @relation("ValidadorEmpresa")
+
+  cambiosEstadoPostulacion HistorialEstadoPostulacion[] @relation("EstadoPostulacionCambiadoPor")
+
+  @@index([rol])
+  @@index([estado])
+  @@map("usuarios")
+}
+
+model Carrera {
+  id     String @id @default(uuid())
+  nombre String @unique
+
+  descripcion String?
+  estaActiva  Boolean @default(true) @map("esta_activa")
+
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  egresados Egresado[]
+
+  @@index([estaActiva])
+  @@map("carreras")
+}
+
+model Sector {
+  id     String @id @default(uuid())
+  nombre String @unique
+
+  descripcion String?
+  estaActivo  Boolean @default(true) @map("esta_activo")
+
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  empresas Empresa[]
+
+  @@index([estaActivo])
+  @@map("sectores")
+}
+
+model Egresado {
+  id      String  @id
+  usuario Usuario @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  nombres   String
+  apellidos String
+  dni       String @unique
+
+  fechaNacimiento DateTime? @map("fecha_nacimiento")
+  telefono        String?
+  direccion       String?
+
+  carreraId String?  @map("carrera_id")
+  carrera   Carrera? @relation(fields: [carreraId], references: [id], onDelete: SetNull)
+
+  anioEgreso Int? @map("anio_egreso")
+
+  pais         String? @default("Peru")
+  region       String?
+  ciudad       String?
+  distrito     String?
+  presentacion String?
+
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  formaciones   FormacionEgresado[]
+  experiencias  ExperienciaEgresado[]
+  habilidades   HabilidadEgresado[]
+  postulaciones Postulacion[]
+
+  @@index([carreraId])
+  @@index([anioEgreso])
+  @@index([ciudad])
+  @@index([region])
+  @@map("egresados")
+}
+
+model FormacionEgresado {
+  id String @id @default(uuid())
+
+  egresadoId String   @map("egresado_id")
+  egresado   Egresado @relation(fields: [egresadoId], references: [id], onDelete: Cascade)
+
+  institucion String
+  grado       String?
+  campo       String?
+  fechaInicio DateTime? @map("fecha_inicio")
+  fechaFin    DateTime? @map("fecha_fin")
+  esActual    Boolean   @default(false) @map("es_actual")
+  descripcion String?
+
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  @@index([egresadoId])
+  @@index([institucion])
+  @@map("formaciones_egresado")
+}
+
+model ExperienciaEgresado {
+  id String @id @default(uuid())
+
+  egresadoId String   @map("egresado_id")
+  egresado   Egresado @relation(fields: [egresadoId], references: [id], onDelete: Cascade)
+
+  empresa     String
+  cargo       String
+  descripcion String?
+  fechaInicio DateTime? @map("fecha_inicio")
+  fechaFin    DateTime? @map("fecha_fin")
+  esActual    Boolean   @default(false) @map("es_actual")
+
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  @@index([egresadoId])
+  @@index([empresa])
+  @@index([cargo])
+  @@map("experiencias_egresado")
+}
+
+model Empresa {
+  id      String  @id
+  usuario Usuario @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  nombreComercial String @map("nombre_comercial")
+  razonSocial     String @map("razon_social")
+  ruc             String @unique
+
+  sectorId String? @map("sector_id")
+  sector   Sector? @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+
+  sitioWeb    String? @map("sitio_web")
+  descripcion String?
+
+  pais      String? @default("Peru")
+  region    String?
+  ciudad    String?
+  distrito  String?
+  direccion String?
+
+  estadoValidacion EstadoValidacionEmpresa @default(PENDIENTE) @map("estado_validacion")
+  validadoPorId    String?                 @map("validado_por_id")
+  validadoPor      Usuario?                @relation("ValidadorEmpresa", fields: [validadoPorId], references: [id])
+  validadoEn       DateTime?               @map("validado_en")
+  motivoRechazo    String?                 @map("motivo_rechazo")
+
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  ofertas OfertaLaboral[]
+
+  @@index([sectorId])
+  @@index([estadoValidacion])
+  @@index([ciudad])
+  @@index([region])
+  @@map("empresas")
+}
+
+model Administrador {
+  id      String  @id
+  usuario Usuario @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  nombreCompleto String  @map("nombre_completo")
+  area           String?
+
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  @@map("administradores")
+}
+
+model Habilidad {
+  id        String        @id @default(uuid())
+  nombre    String        @unique
+  tipo      TipoHabilidad
+  categoria String?
+
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  egresados HabilidadEgresado[]
+  ofertas   HabilidadOferta[]
+
+  @@index([tipo])
+  @@index([categoria])
+  @@map("habilidades")
+}
+
+model HabilidadEgresado {
+  egresadoId  String @map("egresado_id")
+  habilidadId String @map("habilidad_id")
+
+  egresado  Egresado  @relation(fields: [egresadoId], references: [id], onDelete: Cascade)
+  habilidad Habilidad @relation(fields: [habilidadId], references: [id], onDelete: Cascade)
+
+  nivel NivelHabilidad?
+
+  creadoEn DateTime @default(now()) @map("creado_en")
+
+  @@id([egresadoId, habilidadId])
+  @@index([habilidadId])
+  @@map("habilidades_egresado")
+}
+
+model OfertaLaboral {
+  id String @id @default(uuid())
+
+  empresaId String  @map("empresa_id")
+  empresa   Empresa @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  titulo      String
+  descripcion String
+
+  vacantes Int @default(1)
+
+  modalidad    ModalidadOferta
+  tipoContrato TipoContrato    @map("tipo_contrato")
+
+  salarioMin Decimal? @map("salario_min") @db.Decimal(10, 2)
+  salarioMax Decimal? @map("salario_max") @db.Decimal(10, 2)
+
+  pais      String? @default("Peru")
+  region    String?
+  ciudad    String?
+  distrito  String?
+  direccion String?
+
+  estado EstadoOferta @default(BORRADOR)
+
+  publicadoEn DateTime? @map("publicado_en")
+  cierreEn    DateTime? @map("cierre_en")
+
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  habilidades   HabilidadOferta[]
+  postulaciones Postulacion[]
+
+  @@index([empresaId])
+  @@index([estado])
+  @@index([modalidad])
+  @@index([tipoContrato])
+  @@index([publicadoEn])
+  @@index([cierreEn])
+  @@index([ciudad])
+  @@index([region])
+  @@index([salarioMin, salarioMax])
+  @@map("ofertas_laborales")
+}
+
+model HabilidadOferta {
+  ofertaId    String @map("oferta_id")
+  habilidadId String @map("habilidad_id")
+
+  oferta    OfertaLaboral @relation(fields: [ofertaId], references: [id], onDelete: Cascade)
+  habilidad Habilidad     @relation(fields: [habilidadId], references: [id], onDelete: Cascade)
+
+  requerida Boolean @default(true)
+
+  creadoEn DateTime @default(now()) @map("creado_en")
+
+  @@id([ofertaId, habilidadId])
+  @@index([habilidadId])
+  @@map("habilidades_oferta")
+}
+
+model Postulacion {
+  id String @id @default(uuid())
+
+  ofertaId String        @map("oferta_id")
+  oferta   OfertaLaboral @relation(fields: [ofertaId], references: [id], onDelete: Cascade)
+
+  egresadoId String   @map("egresado_id")
+  egresado   Egresado @relation(fields: [egresadoId], references: [id], onDelete: Cascade)
+
+  estado     EstadoPostulacion @default(POSTULADO)
+  comentario String?
+
+  postuladoEn   DateTime @default(now()) @map("postulado_en")
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  historial HistorialEstadoPostulacion[]
+
+  @@unique([ofertaId, egresadoId])
+  @@index([ofertaId])
+  @@index([egresadoId])
+  @@index([estado])
+  @@index([postuladoEn])
+  @@map("postulaciones")
+}
+
+model HistorialEstadoPostulacion {
+  id String @id @default(uuid())
+
+  postulacionId String      @map("postulacion_id")
+  postulacion   Postulacion @relation(fields: [postulacionId], references: [id], onDelete: Cascade)
+
+  estadoAnterior EstadoPostulacion? @map("estado_anterior")
+  estadoNuevo    EstadoPostulacion  @map("estado_nuevo")
+
+  motivo String?
+
+  cambiadoPorId String?  @map("cambiado_por_id")
+  cambiadoPor   Usuario? @relation("EstadoPostulacionCambiadoPor", fields: [cambiadoPorId], references: [id])
+
+  creadoEn DateTime @default(now()) @map("creado_en")
+
+  @@index([postulacionId])
+  @@index([estadoNuevo])
+  @@index([creadoEn])
+  @@map("historial_estados_postulacion")
+}
+
+model Notificacion {
+  id String @id @default(uuid())
+
+  usuarioId String  @map("usuario_id")
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  tipo  TipoNotificacion
+  canal CanalNotificacion @default(INTERNA)
+
+  titulo    String
+  contenido String
+  leida     Boolean @default(false)
+
+  metadata Json?
+
+  creadoEn DateTime  @default(now()) @map("creado_en")
+  leidaEn  DateTime? @map("leida_en")
+
+  @@index([usuarioId, leida])
+  @@index([tipo])
+  @@index([creadoEn])
+  @@map("notificaciones")
+}
+
+model Reporte {
+  id String @id @default(uuid())
+
+  usuarioId String  @map("usuario_id")
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  tipo   TipoReporte
+  estado EstadoReporte @default(PENDIENTE)
+
+  nombreArchivo String? @map("nombre_archivo")
+
+  archivoId String?  @unique @map("archivo_id")
+  archivo   Archivo? @relation(fields: [archivoId], references: [id], onDelete: SetNull)
+
+  parametros Json?
+
+  mensajeError String? @map("mensaje_error")
+
+  creadoEn     DateTime  @default(now()) @map("creado_en")
+  iniciadoEn   DateTime? @map("iniciado_en")
+  completadoEn DateTime? @map("completado_en")
+
+  @@index([usuarioId])
+  @@index([tipo])
+  @@index([estado])
+  @@index([creadoEn])
+  @@map("reportes")
+}
+
+model Archivo {
+  id String @id @default(uuid())
+
+  url           String
+  key           String?
+  nombreArchivo String  @map("nombre_archivo")
+  mimeType      String  @map("mime_type")
+  tamanio       Int?
+
+  categoria CategoriaArchivo
+
+  tipoEntidad TipoEntidadArchivo @map("tipo_entidad")
+  entidadId   String             @map("entidad_id")
+
+  proveedorAlmacenamiento String @default("LOCAL") @map("proveedor_almacenamiento")
+
+  creadoEn DateTime @default(now()) @map("creado_en")
+
+  reporte Reporte?
+
+  @@index([categoria])
+  @@index([tipoEntidad, entidadId])
+  @@map("archivos")
+}
+
+model Auditoria {
+  id String @id @default(uuid())
+
+  usuarioId String?  @map("usuario_id")
+  usuario   Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  accion  String
+  entidad String
+
+  entidadId String? @map("entidad_id")
+
+  datosAnteriores Json? @map("datos_anteriores")
+  datosNuevos     Json? @map("datos_nuevos")
+
+  ip        String?
+  userAgent String? @map("user_agent")
+
+  creadoEn DateTime @default(now()) @map("creado_en")
+
+  @@index([usuarioId])
+  @@index([accion])
+  @@index([entidad])
+  @@index([entidadId])
+  @@index([creadoEn])
+  @@map("auditorias")
+}
+
+model MetricaAgregada {
+  id String @id @default(uuid())
+
+  fecha       DateTime
+  tipoMetrica TipoMetrica @map("tipo_metrica")
+  valores     Json
+
+  creadoEn      DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  @@unique([fecha, tipoMetrica])
+  @@index([tipoMetrica])
+  @@index([fecha])
+  @@map("metricas_agregadas")
 }

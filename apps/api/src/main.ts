@@ -1,9 +1,11 @@
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import { AppModule } from './app.module';
+import { AuthService } from './auth/auth.service';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { createTrpcContext } from './trpc/trpc.context';
@@ -12,6 +14,7 @@ import { TrpcRouter } from './trpc/trpc.router';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const authService = app.get(AuthService);
   const trpcRouter = app.get(TrpcRouter);
 
   app.useGlobalPipes(
@@ -24,6 +27,7 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalInterceptors(new LoggingInterceptor());
 
+  app.use(cookieParser());
   app.use(helmet());
 
   const corsOrigins = (
@@ -42,7 +46,12 @@ async function bootstrap() {
     '/trpc',
     trpcExpress.createExpressMiddleware({
       router: trpcRouter.appRouter,
-      createContext: createTrpcContext,
+      createContext: ({ req, res }) =>
+        createTrpcContext({
+          req,
+          res,
+          authService,
+        }),
     }),
   );
 

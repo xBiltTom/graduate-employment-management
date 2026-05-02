@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthService } from '../auth/auth.service';
 import { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
 
 export interface TrpcContext {
@@ -7,16 +8,18 @@ export interface TrpcContext {
   user: AuthenticatedUser | null;
 }
 
-export function createTrpcContext({
+export async function createTrpcContext({
   req,
   res,
+  authService,
 }: {
   req: Request;
   res: Response;
-}): TrpcContext {
+  authService: AuthService;
+}): Promise<TrpcContext> {
   return {
     req,
     res,
-    user: null,
+    user: await authService.getUserFromRequest(req),
   };
 }

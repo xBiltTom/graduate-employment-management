@@ -7,6 +7,9 @@ export class TrpcRouter {
 
   constructor(private readonly trpc: TrpcService) {
     this.appRouter = this.trpc.router({
+      auth: this.trpc.router({
+        me: this.trpc.protectedProcedure.query(({ ctx }) => ctx.user),
+      }),
       health: this.trpc.router({
         check: this.trpc.publicProcedure.query(() => ({
           status: 'ok',

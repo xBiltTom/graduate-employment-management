@@ -7,3 +7,5 @@ tmp/
 *.tmp
 .DS_Store
 Thumbs.db
+
+FASE_-1_AUDITORIA_SCHEMA_PRISMA.md

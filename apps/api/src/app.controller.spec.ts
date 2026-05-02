@@ -14,9 +14,15 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+  describe('health', () => {
+    it('should return the REST health payload', () => {
+      const response = appController.getHealth();
+
+      expect(response).toMatchObject({
+        status: 'ok',
+        transport: 'rest',
+      });
+      expect(typeof response.timestamp).toBe('string');
     });
   });
 });

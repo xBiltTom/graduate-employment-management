@@ -5,10 +5,13 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { CarrerasModule } from './carreras/carreras.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { validateEnv } from './config/env.validation';
+import { HabilidadesModule } from './habilidades/habilidades.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { SectoresModule } from './sectores/sectores.module';
 import { TrpcModule } from './trpc/trpc.module';
 
 @Module({
@@ -28,6 +31,9 @@ import { TrpcModule } from './trpc/trpc.module';
     }),
     PrismaModule,
     AuthModule,
+    CarrerasModule,
+    SectoresModule,
+    HabilidadesModule,
     TrpcModule,
   ],
   controllers: [AppController],

@@ -9,6 +9,7 @@ import { CarrerasModule } from './carreras/carreras.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { validateEnv } from './config/env.validation';
+import { EgresadosModule } from './egresados/egresados.module';
 import { HabilidadesModule } from './habilidades/habilidades.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SectoresModule } from './sectores/sectores.module';
@@ -34,6 +35,7 @@ import { TrpcModule } from './trpc/trpc.module';
     CarrerasModule,
     SectoresModule,
     HabilidadesModule,
+    EgresadosModule,
     TrpcModule,
   ],
   controllers: [AppController],

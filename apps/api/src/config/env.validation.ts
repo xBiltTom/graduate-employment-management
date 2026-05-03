@@ -15,6 +15,8 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().default('dev-refresh-secret-change-me'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
   COOKIE_DOMAIN: z.string().default(''),
+  FILES_STORAGE_DIR: z.string().default('storage/files'),
+  MAX_UPLOAD_SIZE_MB: z.coerce.number().int().positive().default(10),
   REPORTS_STORAGE_DIR: z.string().default('storage/reports'),
   REPORTS_BASE_URL: z
     .string()

@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ArchivosModule } from './archivos/archivos.module';
 import { AuthModule } from './auth/auth.module';
 import { CarrerasModule } from './carreras/carreras.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
@@ -38,6 +39,7 @@ import { TrpcModule } from './trpc/trpc.module';
     }),
     PrismaModule,
     AuthModule,
+    ArchivosModule,
     CarrerasModule,
     SectoresModule,
     HabilidadesModule,

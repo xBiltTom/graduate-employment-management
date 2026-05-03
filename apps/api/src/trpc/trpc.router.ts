@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ArchivosRouter } from '../archivos/archivos.router';
 import { CarrerasRouter } from '../carreras/carreras.router';
 import { EstadisticasRouter } from '../estadisticas/estadisticas.router';
 import { EmpresasRouter } from '../empresas/empresas.router';
@@ -17,6 +18,7 @@ export class TrpcRouter {
 
   constructor(
     private readonly trpc: TrpcService,
+    private readonly archivosRouter: ArchivosRouter,
     private readonly carrerasRouter: CarrerasRouter,
     private readonly empresasRouter: EmpresasRouter,
     private readonly estadisticasRouter: EstadisticasRouter,
@@ -32,6 +34,7 @@ export class TrpcRouter {
       auth: this.trpc.router({
         me: this.trpc.protectedProcedure.query(({ ctx }) => ctx.user),
       }),
+      archivos: this.archivosRouter.router,
       carreras: this.carrerasRouter.router,
       empresas: this.empresasRouter.router,
       estadisticas: this.estadisticasRouter.router,

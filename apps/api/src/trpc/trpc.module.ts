@@ -1,4 +1,6 @@
 import { Global, Module } from '@nestjs/common';
+import { ArchivosModule } from '../archivos/archivos.module';
+import { ArchivosRouter } from '../archivos/archivos.router';
 import { CarrerasModule } from '../carreras/carreras.module';
 import { EstadisticasModule } from '../estadisticas/estadisticas.module';
 import { EmpresasModule } from '../empresas/empresas.module';
@@ -17,6 +19,7 @@ import { TrpcService } from './trpc.service';
 @Global()
 @Module({
   imports: [
+    ArchivosModule,
     CarrerasModule,
     SectoresModule,
     HabilidadesModule,
@@ -28,7 +31,13 @@ import { TrpcService } from './trpc.service';
     PostulacionesModule,
     ReportesModule,
   ],
-  providers: [TrpcService, TrpcRouter, NotificacionesRouter, ReportesRouter],
+  providers: [
+    TrpcService,
+    TrpcRouter,
+    NotificacionesRouter,
+    ReportesRouter,
+    ArchivosRouter,
+  ],
   exports: [TrpcService, TrpcRouter],
 })
 export class TrpcModule {}

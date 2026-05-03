@@ -12,6 +12,7 @@ import { validateEnv } from './config/env.validation';
 import { EmpresasModule } from './empresas/empresas.module';
 import { EgresadosModule } from './egresados/egresados.module';
 import { HabilidadesModule } from './habilidades/habilidades.module';
+import { OfertasModule } from './ofertas/ofertas.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SectoresModule } from './sectores/sectores.module';
 import { TrpcModule } from './trpc/trpc.module';
@@ -38,6 +39,7 @@ import { TrpcModule } from './trpc/trpc.module';
     HabilidadesModule,
     EmpresasModule,
     EgresadosModule,
+    OfertasModule,
     TrpcModule,
   ],
   controllers: [AppController],

@@ -3,6 +3,7 @@ import { CarrerasRouter } from '../carreras/carreras.router';
 import { EmpresasRouter } from '../empresas/empresas.router';
 import { EgresadosRouter } from '../egresados/egresados.router';
 import { HabilidadesRouter } from '../habilidades/habilidades.router';
+import { OfertasRouter } from '../ofertas/ofertas.router';
 import { SectoresRouter } from '../sectores/sectores.router';
 import { TrpcService } from './trpc.service';
 
@@ -17,6 +18,7 @@ export class TrpcRouter {
     private readonly egresadosRouter: EgresadosRouter,
     private readonly sectoresRouter: SectoresRouter,
     private readonly habilidadesRouter: HabilidadesRouter,
+    private readonly ofertasRouter: OfertasRouter,
   ) {
     this.appRouter = this.trpc.router({
       auth: this.trpc.router({
@@ -33,6 +35,7 @@ export class TrpcRouter {
         })),
       }),
       habilidades: this.habilidadesRouter.router,
+      ofertas: this.ofertasRouter.router,
       sectores: this.sectoresRouter.router,
     });
   }

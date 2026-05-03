@@ -17,6 +17,7 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { OfertasModule } from './ofertas/ofertas.module';
 import { PostulacionesModule } from './postulaciones/postulaciones.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ReportesModule } from './reportes/reportes.module';
 import { SectoresModule } from './sectores/sectores.module';
 import { TrpcModule } from './trpc/trpc.module';
 
@@ -46,6 +47,7 @@ import { TrpcModule } from './trpc/trpc.module';
     EgresadosModule,
     OfertasModule,
     PostulacionesModule,
+    ReportesModule,
     TrpcModule,
   ],
   controllers: [AppController],

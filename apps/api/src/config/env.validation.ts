@@ -15,6 +15,11 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().default('dev-refresh-secret-change-me'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
   COOKIE_DOMAIN: z.string().default(''),
+  REPORTS_STORAGE_DIR: z.string().default('storage/reports'),
+  REPORTS_BASE_URL: z
+    .string()
+    .url()
+    .default('http://localhost:3001/api/v1/reportes'),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

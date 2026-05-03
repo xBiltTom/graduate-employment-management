@@ -4,6 +4,7 @@ dist/
 *.log
 coverage/
 tmp/
+storage/
 *.tmp
 .DS_Store
 Thumbs.db

@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { CarrerasModule } from '../carreras/carreras.module';
+import { EstadisticasModule } from '../estadisticas/estadisticas.module';
 import { EmpresasModule } from '../empresas/empresas.module';
 import { EgresadosModule } from '../egresados/egresados.module';
 import { HabilidadesModule } from '../habilidades/habilidades.module';
@@ -19,6 +20,7 @@ import { TrpcService } from './trpc.service';
     HabilidadesModule,
     NotificacionesModule,
     EmpresasModule,
+    EstadisticasModule,
     EgresadosModule,
     OfertasModule,
     PostulacionesModule,

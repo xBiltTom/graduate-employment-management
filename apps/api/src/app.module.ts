@@ -13,6 +13,7 @@ import { EmpresasModule } from './empresas/empresas.module';
 import { EgresadosModule } from './egresados/egresados.module';
 import { HabilidadesModule } from './habilidades/habilidades.module';
 import { OfertasModule } from './ofertas/ofertas.module';
+import { PostulacionesModule } from './postulaciones/postulaciones.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SectoresModule } from './sectores/sectores.module';
 import { TrpcModule } from './trpc/trpc.module';
@@ -40,6 +41,7 @@ import { TrpcModule } from './trpc/trpc.module';
     EmpresasModule,
     EgresadosModule,
     OfertasModule,
+    PostulacionesModule,
     TrpcModule,
   ],
   controllers: [AppController],

@@ -25,12 +25,18 @@ describe('EmpresasService', () => {
     },
     $transaction: jest.fn(),
   };
+  const notificacionesService = {
+    notificarEmpresaValidada: jest.fn(),
+  };
 
   let service: EmpresasService;
 
   beforeEach(() => {
     jest.resetAllMocks();
-    service = new EmpresasService(prisma as never);
+    service = new EmpresasService(
+      prisma as never,
+      notificacionesService as never,
+    );
   });
 
   it('getMiPerfil lanza NotFoundException si no existe empresa', async () => {

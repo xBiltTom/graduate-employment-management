@@ -3,6 +3,8 @@ import { CarrerasModule } from '../carreras/carreras.module';
 import { EmpresasModule } from '../empresas/empresas.module';
 import { EgresadosModule } from '../egresados/egresados.module';
 import { HabilidadesModule } from '../habilidades/habilidades.module';
+import { NotificacionesModule } from '../notificaciones/notificaciones.module';
+import { NotificacionesRouter } from '../notificaciones/notificaciones.router';
 import { OfertasModule } from '../ofertas/ofertas.module';
 import { PostulacionesModule } from '../postulaciones/postulaciones.module';
 import { SectoresModule } from '../sectores/sectores.module';
@@ -15,12 +17,13 @@ import { TrpcService } from './trpc.service';
     CarrerasModule,
     SectoresModule,
     HabilidadesModule,
+    NotificacionesModule,
     EmpresasModule,
     EgresadosModule,
     OfertasModule,
     PostulacionesModule,
   ],
-  providers: [TrpcService, TrpcRouter],
+  providers: [TrpcService, TrpcRouter, NotificacionesRouter],
   exports: [TrpcService, TrpcRouter],
 })
 export class TrpcModule {}

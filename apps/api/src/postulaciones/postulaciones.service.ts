@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import {
@@ -16,6 +17,7 @@ import {
   buildPaginationMeta,
   normalizePagination,
 } from '../common/utils/pagination.util';
+import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   AdminListPostulacionesInput,
@@ -201,10 +203,15 @@ const postulacionAdminDetalleSelect = {
 
 @Injectable()
 export class PostulacionesService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(PostulacionesService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificacionesService: NotificacionesService,
+  ) {}
 
   async postular(egresadoId: string, input: PostularInput) {
-    await this.ensureEgresadoExists(egresadoId);
+    const egresado = await this.ensureEgresadoExists(egresadoId);
 
     const oferta = await this.prisma.ofertaLaboral.findUnique({
       where: { id: input.ofertaId },
@@ -212,6 +219,8 @@ export class PostulacionesService {
         id: true,
         estado: true,
         cierreEn: true,
+        titulo: true,
+        empresaId: true,
       },
     });
 
@@ -244,9 +253,7 @@ export class PostulacionesService {
     }
 
     let postulacionId = '';
-
     // TODO: auditar postulacion creada.
-    // TODO: notificar nueva postulacion a la empresa.
     await this.prisma.$transaction(async (tx) => {
       const postulacion = await tx.postulacion.create({
         data: {
@@ -271,6 +278,16 @@ export class PostulacionesService {
         },
       });
     });
+
+    await this.safeNotify(() =>
+      this.notificacionesService.notificarNuevaPostulacion({
+        empresaUsuarioId: oferta.empresaId,
+        ofertaId: oferta.id,
+        postulacionId,
+        tituloOferta: oferta.titulo,
+        nombreEgresado: `${egresado.nombres} ${egresado.apellidos}`.trim(),
+      }),
+    );
 
     return this.getById(postulacionId, {
       id: egresadoId,
@@ -372,9 +389,12 @@ export class PostulacionesService {
       select: {
         id: true,
         estado: true,
+        egresadoId: true,
         oferta: {
           select: {
+            id: true,
             empresaId: true,
+            titulo: true,
           },
         },
       },
@@ -398,9 +418,7 @@ export class PostulacionesService {
     }
 
     this.assertTransitionPermitida(postulacion.estado, input.nuevoEstado);
-
     // TODO: auditar cambio de estado de postulacion.
-    // TODO: notificar cambio de estado al egresado.
     await this.prisma.$transaction(async (tx) => {
       await tx.postulacion.update({
         where: { id: input.postulacionId },
@@ -419,6 +437,16 @@ export class PostulacionesService {
         },
       });
     });
+
+    await this.safeNotify(() =>
+      this.notificacionesService.notificarCambioEstadoPostulacion({
+        egresadoUsuarioId: postulacion.egresadoId,
+        postulacionId: input.postulacionId,
+        ofertaId: postulacion.oferta.id,
+        tituloOferta: postulacion.oferta.titulo,
+        nuevoEstado: input.nuevoEstado,
+      }),
+    );
 
     return this.getById(input.postulacionId, actor);
   }
@@ -570,12 +598,18 @@ export class PostulacionesService {
   private async ensureEgresadoExists(egresadoId: string) {
     const egresado = await this.prisma.egresado.findUnique({
       where: { id: egresadoId },
-      select: { id: true },
+      select: {
+        id: true,
+        nombres: true,
+        apellidos: true,
+      },
     });
 
     if (!egresado) {
       throw new NotFoundException('Perfil de egresado no encontrado');
     }
+
+    return egresado;
   }
 
   private async getPostulacionAccessData(id: string) {
@@ -650,5 +684,15 @@ export class PostulacionesService {
     }
 
     return parsed;
+  }
+
+  private async safeNotify(callback: () => Promise<unknown>) {
+    try {
+      await callback();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Error desconocido';
+      this.logger.warn(`No se pudo crear notificacion: ${message}`);
+    }
   }
 }

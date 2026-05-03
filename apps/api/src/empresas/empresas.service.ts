@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import {
@@ -15,6 +16,7 @@ import {
   buildPaginationMeta,
   normalizePagination,
 } from '../common/utils/pagination.util';
+import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   GetEmpresaByIdInput,
@@ -89,7 +91,12 @@ const privateEmpresaSelect = {
 
 @Injectable()
 export class EmpresasService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(EmpresasService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificacionesService: NotificacionesService,
+  ) {}
 
   async getMiPerfil(userId: string) {
     const empresa = await this.prisma.empresa.findUnique({
@@ -210,7 +217,6 @@ export class EmpresasService {
     }
 
     // TODO: auditar validacion o rechazo administrativo de empresa.
-    // TODO: notificar a la empresa cuando sea aprobada o rechazada.
     await this.prisma.$transaction(async (tx) => {
       await tx.empresa.update({
         where: { id: input.empresaId },
@@ -235,6 +241,14 @@ export class EmpresasService {
         },
       });
     });
+
+    await this.safeNotify(() =>
+      this.notificacionesService.notificarEmpresaValidada({
+        empresaUsuarioId: input.empresaId,
+        aprobada: input.decision === EstadoValidacionEmpresa.APROBADA,
+        motivoRechazo: input.motivoRechazo ?? null,
+      }),
+    );
 
     return this.getMiPerfil(input.empresaId);
   }
@@ -420,5 +434,15 @@ export class EmpresasService {
           }
         : {}),
     };
+  }
+
+  private async safeNotify(callback: () => Promise<unknown>) {
+    try {
+      await callback();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Error desconocido';
+      this.logger.warn(`No se pudo crear notificacion: ${message}`);
+    }
   }
 }

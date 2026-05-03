@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import {
@@ -15,6 +16,7 @@ import {
   normalizePagination,
 } from '../common/utils/pagination.util';
 import { EmpresasService } from '../empresas/empresas.service';
+import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   AdminListOfertasInput,
@@ -97,9 +99,12 @@ const privateOfertaSelect = {
 
 @Injectable()
 export class OfertasService {
+  private readonly logger = new Logger(OfertasService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly empresasService: EmpresasService,
+    private readonly notificacionesService: NotificacionesService,
   ) {}
 
   async feed(input: FeedOfertasInput, viewer: AuthenticatedUser) {
@@ -431,6 +436,8 @@ export class OfertasService {
       select: {
         id: true,
         estado: true,
+        titulo: true,
+        empresaId: true,
       },
     });
 
@@ -444,9 +451,7 @@ export class OfertasService {
     ) {
       throw new BadRequestException('La oferta no se puede moderar');
     }
-
     // TODO: auditar moderacion administrativa de oferta.
-    // TODO: notificar a la empresa cuando una oferta sea aprobada o rechazada.
     await this.prisma.ofertaLaboral.update({
       where: { id: input.id },
       data: {
@@ -457,6 +462,15 @@ export class OfertasService {
         publicadoEn: input.decision === 'APROBAR' ? new Date() : null,
       },
     });
+
+    await this.safeNotify(() =>
+      this.notificacionesService.notificarOfertaModerada({
+        empresaUsuarioId: oferta.empresaId,
+        ofertaId: oferta.id,
+        tituloOferta: oferta.titulo,
+        aprobada: input.decision === 'APROBAR',
+      }),
+    );
 
     return this.getById(input.id, {
       id: adminId,
@@ -772,5 +786,15 @@ export class OfertasService {
           }
         : {}),
     };
+  }
+
+  private async safeNotify(callback: () => Promise<unknown>) {
+    try {
+      await callback();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Error desconocido';
+      this.logger.warn(`No se pudo crear notificacion: ${message}`);
+    }
   }
 }

@@ -3,6 +3,7 @@ import { CarrerasRouter } from '../carreras/carreras.router';
 import { EmpresasRouter } from '../empresas/empresas.router';
 import { EgresadosRouter } from '../egresados/egresados.router';
 import { HabilidadesRouter } from '../habilidades/habilidades.router';
+import { NotificacionesRouter } from '../notificaciones/notificaciones.router';
 import { OfertasRouter } from '../ofertas/ofertas.router';
 import { PostulacionesRouter } from '../postulaciones/postulaciones.router';
 import { SectoresRouter } from '../sectores/sectores.router';
@@ -19,6 +20,7 @@ export class TrpcRouter {
     private readonly egresadosRouter: EgresadosRouter,
     private readonly sectoresRouter: SectoresRouter,
     private readonly habilidadesRouter: HabilidadesRouter,
+    private readonly notificacionesRouter: NotificacionesRouter,
     private readonly ofertasRouter: OfertasRouter,
     private readonly postulacionesRouter: PostulacionesRouter,
   ) {
@@ -37,6 +39,7 @@ export class TrpcRouter {
         })),
       }),
       habilidades: this.habilidadesRouter.router,
+      notificaciones: this.notificacionesRouter.router,
       ofertas: this.ofertasRouter.router,
       postulaciones: this.postulacionesRouter.router,
       sectores: this.sectoresRouter.router,

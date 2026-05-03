@@ -32,12 +32,19 @@ describe('PostulacionesService', () => {
     },
     $transaction: jest.fn(),
   };
+  const notificacionesService = {
+    notificarNuevaPostulacion: jest.fn(),
+    notificarCambioEstadoPostulacion: jest.fn(),
+  };
 
   let service: PostulacionesService;
 
   beforeEach(() => {
     jest.resetAllMocks();
-    service = new PostulacionesService(prisma as never);
+    service = new PostulacionesService(
+      prisma as never,
+      notificacionesService as never,
+    );
   });
 
   it('postular rechaza oferta inexistente', async () => {

@@ -30,12 +30,19 @@ describe('OfertasService', () => {
   const empresasService = {
     assertEmpresaAprobada: jest.fn(),
   };
+  const notificacionesService = {
+    notificarOfertaModerada: jest.fn(),
+  };
 
   let service: OfertasService;
 
   beforeEach(() => {
     jest.resetAllMocks();
-    service = new OfertasService(prisma as never, empresasService as never);
+    service = new OfertasService(
+      prisma as never,
+      empresasService as never,
+      notificacionesService as never,
+    );
   });
 
   it('create llama a assertEmpresaAprobada', async () => {

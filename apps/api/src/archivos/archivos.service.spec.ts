@@ -41,6 +41,9 @@ describe('ArchivosService', () => {
       return undefined;
     }),
   };
+  const auditoriaService = {
+    registrarSeguro: jest.fn(),
+  };
 
   let service: ArchivosService;
 
@@ -63,7 +66,8 @@ describe('ArchivosService', () => {
     service = new ArchivosService(
       prisma as never,
       fileStorageService,
-      configService as never,
+      configService,
+      auditoriaService as never,
     );
   });
 

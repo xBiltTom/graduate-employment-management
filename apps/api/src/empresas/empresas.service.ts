@@ -12,6 +12,7 @@ import {
   RolUsuario,
 } from '@graduate-employment-management/database';
 import { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
+import { AuditoriaService } from '../auditoria/auditoria.service';
 import {
   buildPaginationMeta,
   normalizePagination,
@@ -96,6 +97,7 @@ export class EmpresasService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificacionesService: NotificacionesService,
+    private readonly auditoriaService: AuditoriaService,
   ) {}
 
   async getMiPerfil(userId: string) {
@@ -112,15 +114,13 @@ export class EmpresasService {
   }
 
   async updateMiPerfil(userId: string, input: UpdateMiPerfilEmpresaInput) {
-    await this.ensureEmpresaExists(userId);
+    const previous = await this.ensureEmpresaExists(userId);
 
     if (input.sectorId) {
       await this.ensureSectorExists(input.sectorId);
     }
 
     const sitioWeb = this.normalizeSitioWeb(input.sitioWeb);
-
-    // TODO: auditar cambios de perfil empresarial.
     await this.prisma.empresa.update({
       where: { id: userId },
       data: {
@@ -147,7 +147,18 @@ export class EmpresasService {
       },
     });
 
-    return this.getMiPerfil(userId);
+    const updated = await this.getMiPerfil(userId);
+
+    await this.auditoriaService.registrarSeguro({
+      usuarioId: userId,
+      accion: 'EMPRESA_PERFIL_ACTUALIZADO',
+      entidad: 'Empresa',
+      entidadId: userId,
+      datosAnteriores: this.toEmpresaAuditSnapshot(previous),
+      datosNuevos: this.toEmpresaAuditSnapshot(updated),
+    });
+
+    return updated;
   }
 
   async getById(input: GetEmpresaByIdInput, viewer: AuthenticatedUser) {
@@ -216,7 +227,6 @@ export class EmpresasService {
       throw new BadRequestException('La empresa ya fue procesada');
     }
 
-    // TODO: auditar validacion o rechazo administrativo de empresa.
     await this.prisma.$transaction(async (tx) => {
       await tx.empresa.update({
         where: { id: input.empresaId },
@@ -250,7 +260,27 @@ export class EmpresasService {
       }),
     );
 
-    return this.getMiPerfil(input.empresaId);
+    const updated = await this.getMiPerfil(input.empresaId);
+
+    await this.auditoriaService.registrarSeguro({
+      usuarioId: adminId,
+      accion:
+        input.decision === EstadoValidacionEmpresa.APROBADA
+          ? 'EMPRESA_VALIDADA'
+          : 'EMPRESA_RECHAZADA',
+      entidad: 'Empresa',
+      entidadId: input.empresaId,
+      datosAnteriores: {
+        estadoValidacion: empresa.estadoValidacion,
+      },
+      datosNuevos: {
+        estadoValidacion: updated.estadoValidacion,
+        motivoRechazo: updated.motivoRechazo,
+        validadoPorId: adminId,
+      },
+    });
+
+    return updated;
   }
 
   async getEstadoValidacion(userId: string) {
@@ -305,12 +335,25 @@ export class EmpresasService {
   private async ensureEmpresaExists(userId: string) {
     const empresa = await this.prisma.empresa.findUnique({
       where: { id: userId },
-      select: { id: true },
+      select: {
+        id: true,
+        nombreComercial: true,
+        descripcion: true,
+        sitioWeb: true,
+        direccion: true,
+        ciudad: true,
+        region: true,
+        pais: true,
+        sectorId: true,
+        estadoValidacion: true,
+      },
     });
 
     if (!empresa) {
       throw new NotFoundException('Perfil de empresa no encontrado');
     }
+
+    return empresa;
   }
 
   private async ensureSectorExists(sectorId: string) {
@@ -444,5 +487,33 @@ export class EmpresasService {
         error instanceof Error ? error.message : 'Error desconocido';
       this.logger.warn(`No se pudo crear notificacion: ${message}`);
     }
+  }
+
+  private toEmpresaAuditSnapshot(empresa: {
+    id: string;
+    nombreComercial?: string | null;
+    descripcion?: string | null;
+    sitioWeb?: string | null;
+    direccion?: string | null;
+    ciudad?: string | null;
+    region?: string | null;
+    pais?: string | null;
+    sectorId?: string | null;
+    estadoValidacion?: EstadoValidacionEmpresa;
+    motivoRechazo?: string | null;
+  }) {
+    return {
+      id: empresa.id,
+      nombreComercial: empresa.nombreComercial ?? null,
+      descripcion: empresa.descripcion ?? null,
+      sitioWeb: empresa.sitioWeb ?? null,
+      direccion: empresa.direccion ?? null,
+      ciudad: empresa.ciudad ?? null,
+      region: empresa.region ?? null,
+      pais: empresa.pais ?? null,
+      sectorId: empresa.sectorId ?? null,
+      estadoValidacion: empresa.estadoValidacion,
+      motivoRechazo: empresa.motivoRechazo ?? null,
+    };
   }
 }

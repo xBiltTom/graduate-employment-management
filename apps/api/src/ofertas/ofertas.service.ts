@@ -11,6 +11,7 @@ import {
   RolUsuario,
 } from '@graduate-employment-management/database';
 import { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
+import { AuditoriaService } from '../auditoria/auditoria.service';
 import {
   buildPaginationMeta,
   normalizePagination,
@@ -105,6 +106,7 @@ export class OfertasService {
     private readonly prisma: PrismaService,
     private readonly empresasService: EmpresasService,
     private readonly notificacionesService: NotificacionesService,
+    private readonly auditoriaService: AuditoriaService,
   ) {}
 
   async feed(input: FeedOfertasInput, viewer: AuthenticatedUser) {
@@ -213,7 +215,6 @@ export class OfertasService {
 
     let ofertaId = '';
 
-    // TODO: auditar creacion de oferta laboral.
     // TODO: notificar a administradores sobre oferta pendiente de revision.
     await this.prisma.$transaction(async (tx) => {
       const oferta = await tx.ofertaLaboral.create({
@@ -249,11 +250,21 @@ export class OfertasService {
       }
     });
 
-    return this.getById(ofertaId, {
+    const created = await this.getById(ofertaId, {
       id: empresaId,
       email: '',
       rol: RolUsuario.EMPRESA,
     });
+
+    await this.auditoriaService.registrarSeguro({
+      usuarioId: empresaId,
+      accion: 'OFERTA_CREADA',
+      entidad: 'OfertaLaboral',
+      entidadId: ofertaId,
+      datosNuevos: this.toOfertaAuditSnapshot(created),
+    });
+
+    return created;
   }
 
   async update(empresaId: string, input: UpdateOfertaInput) {
@@ -289,8 +300,7 @@ export class OfertasService {
     await this.ensureHabilidadesExist(input.habilidadIds);
 
     const shouldResetModeration = this.hasContentChanges(input);
-
-    // TODO: auditar edicion de oferta laboral.
+    const previousSnapshot = this.toOfertaAuditSnapshot(oferta);
     await this.prisma.$transaction(async (tx) => {
       await tx.ofertaLaboral.update({
         where: { id: input.id },
@@ -349,11 +359,22 @@ export class OfertasService {
       }
     });
 
-    return this.getById(input.id, {
+    const updated = await this.getById(input.id, {
       id: empresaId,
       email: '',
       rol: RolUsuario.EMPRESA,
     });
+
+    await this.auditoriaService.registrarSeguro({
+      usuarioId: empresaId,
+      accion: 'OFERTA_ACTUALIZADA',
+      entidad: 'OfertaLaboral',
+      entidadId: input.id,
+      datosAnteriores: previousSnapshot,
+      datosNuevos: this.toOfertaAuditSnapshot(updated),
+    });
+
+    return updated;
   }
 
   async cerrar(empresaId: string, id: string) {
@@ -363,7 +384,6 @@ export class OfertasService {
       throw new ForbiddenException('No puedes cerrar esta oferta');
     }
 
-    // TODO: auditar cierre de oferta laboral.
     // TODO: notificar cierre de oferta si corresponde.
     await this.prisma.ofertaLaboral.update({
       where: { id },
@@ -372,11 +392,22 @@ export class OfertasService {
       },
     });
 
-    return this.getById(id, {
+    const updated = await this.getById(id, {
       id: empresaId,
       email: '',
       rol: RolUsuario.EMPRESA,
     });
+
+    await this.auditoriaService.registrarSeguro({
+      usuarioId: empresaId,
+      accion: 'OFERTA_CERRADA',
+      entidad: 'OfertaLaboral',
+      entidadId: id,
+      datosAnteriores: this.toOfertaAuditSnapshot(oferta),
+      datosNuevos: this.toOfertaAuditSnapshot(updated),
+    });
+
+    return updated;
   }
 
   async delete(empresaId: string, id: string) {
@@ -451,7 +482,6 @@ export class OfertasService {
     ) {
       throw new BadRequestException('La oferta no se puede moderar');
     }
-    // TODO: auditar moderacion administrativa de oferta.
     await this.prisma.ofertaLaboral.update({
       where: { id: input.id },
       data: {
@@ -472,11 +502,23 @@ export class OfertasService {
       }),
     );
 
-    return this.getById(input.id, {
+    const updated = await this.getById(input.id, {
       id: adminId,
       email: '',
       rol: RolUsuario.ADMINISTRADOR,
     });
+
+    await this.auditoriaService.registrarSeguro({
+      usuarioId: adminId,
+      accion:
+        input.decision === 'APROBAR' ? 'OFERTA_APROBADA' : 'OFERTA_RECHAZADA',
+      entidad: 'OfertaLaboral',
+      entidadId: input.id,
+      datosAnteriores: this.toOfertaAuditSnapshot(oferta),
+      datosNuevos: this.toOfertaAuditSnapshot(updated),
+    });
+
+    return updated;
   }
 
   private async getOfertaOrFail<T extends Prisma.OfertaLaboralSelect>(
@@ -796,5 +838,59 @@ export class OfertasService {
         error instanceof Error ? error.message : 'Error desconocido';
       this.logger.warn(`No se pudo crear notificacion: ${message}`);
     }
+  }
+
+  private toOfertaAuditSnapshot(oferta: {
+    id: string;
+    empresaId?: string;
+    titulo?: string;
+    modalidad?: Prisma.OfertaLaboralGetPayload<{
+      select: { modalidad: true };
+    }>['modalidad'];
+    tipoContrato?: Prisma.OfertaLaboralGetPayload<{
+      select: { tipoContrato: true };
+    }>['tipoContrato'];
+    estado?: EstadoOferta;
+    cierreEn?: Date | null;
+    publicadoEn?: Date | null;
+    salarioMin?: Prisma.Decimal | number | null;
+    salarioMax?: Prisma.Decimal | number | null;
+    ciudad?: string | null;
+    region?: string | null;
+    pais?: string | null;
+    habilidades?: Array<{
+      habilidad?: {
+        id: string;
+        nombre: string;
+      };
+    }>;
+    empresa?: {
+      id: string;
+    };
+  }) {
+    return {
+      id: oferta.id,
+      empresaId: oferta.empresaId ?? oferta.empresa?.id,
+      titulo: oferta.titulo ?? null,
+      modalidad: oferta.modalidad,
+      tipoContrato: oferta.tipoContrato,
+      estado: oferta.estado,
+      cierreEn: oferta.cierreEn ?? null,
+      publicadoEn: oferta.publicadoEn ?? null,
+      salarioMin:
+        oferta.salarioMin instanceof Prisma.Decimal
+          ? oferta.salarioMin.toNumber()
+          : (oferta.salarioMin ?? null),
+      salarioMax:
+        oferta.salarioMax instanceof Prisma.Decimal
+          ? oferta.salarioMax.toNumber()
+          : (oferta.salarioMax ?? null),
+      ciudad: oferta.ciudad ?? null,
+      region: oferta.region ?? null,
+      pais: oferta.pais ?? null,
+      habilidadIds:
+        oferta.habilidades?.map((item) => item.habilidad?.id).filter(Boolean) ??
+        [],
+    };
   }
 }

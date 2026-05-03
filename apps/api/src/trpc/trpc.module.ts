@@ -1,6 +1,8 @@
 import { Global, Module } from '@nestjs/common';
 import { ArchivosModule } from '../archivos/archivos.module';
 import { ArchivosRouter } from '../archivos/archivos.router';
+import { AuditoriaModule } from '../auditoria/auditoria.module';
+import { AuditoriaRouter } from '../auditoria/auditoria.router';
 import { CarrerasModule } from '../carreras/carreras.module';
 import { EstadisticasModule } from '../estadisticas/estadisticas.module';
 import { EmpresasModule } from '../empresas/empresas.module';
@@ -20,6 +22,7 @@ import { TrpcService } from './trpc.service';
 @Module({
   imports: [
     ArchivosModule,
+    AuditoriaModule,
     CarrerasModule,
     SectoresModule,
     HabilidadesModule,
@@ -37,6 +40,7 @@ import { TrpcService } from './trpc.service';
     NotificacionesRouter,
     ReportesRouter,
     ArchivosRouter,
+    AuditoriaRouter,
   ],
   exports: [TrpcService, TrpcRouter],
 })

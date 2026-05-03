@@ -12,6 +12,7 @@ import {
   TipoReporte,
 } from '@graduate-employment-management/database';
 import { z } from 'zod';
+import { AuditoriaService } from '../auditoria/auditoria.service';
 import { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
 import {
   buildPaginationMeta,
@@ -97,6 +98,7 @@ export class ReportesService {
     private readonly prisma: PrismaService,
     private readonly reportsJobService: ReportsJobService,
     private readonly reportsStorageService: ReportsStorageService,
+    private readonly auditoriaService: AuditoriaService,
   ) {}
 
   async solicitar(user: AuthenticatedUser, input: SolicitarReporteInput) {
@@ -119,6 +121,17 @@ export class ReportesService {
     });
 
     await this.reportsJobService.processReport(reporte.id);
+
+    await this.auditoriaService.registrarSeguro({
+      usuarioId: user.id,
+      accion: 'REPORTE_SOLICITADO',
+      entidad: 'Reporte',
+      entidadId: reporte.id,
+      datosNuevos: {
+        tipo: input.tipo,
+        parametros,
+      },
+    });
 
     return this.getById(user, reporte.id);
   }
@@ -234,6 +247,13 @@ export class ReportesService {
     const filePath = await this.reportsStorageService.resolveExistingReportPath(
       reporte.archivo.key,
     );
+
+    await this.auditoriaService.registrarSeguro({
+      usuarioId: user.id,
+      accion: 'REPORTE_DESCARGADO',
+      entidad: 'Reporte',
+      entidadId: reporte.id,
+    });
 
     return {
       path: filePath,

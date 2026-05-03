@@ -33,6 +33,9 @@ describe('ReportesService', () => {
   const reportsStorageService = {
     resolveExistingReportPath: jest.fn(),
   };
+  const auditoriaService = {
+    registrarSeguro: jest.fn(),
+  };
 
   let service: ReportesService;
 
@@ -42,6 +45,7 @@ describe('ReportesService', () => {
       prisma as never,
       reportsJobService as never,
       reportsStorageService as never,
+      auditoriaService as never,
     );
   });
 
@@ -241,7 +245,7 @@ describe('ReportsStorageService', () => {
   let service: ReportsStorageService;
 
   beforeEach(async () => {
-    service = new ReportsStorageService(configService as never);
+    service = new ReportsStorageService(configService);
     await fs.rm(tempDir, { recursive: true, force: true });
   });
 
@@ -315,7 +319,7 @@ describe('ReportsJobService', () => {
       prisma as never,
       pdfGeneratorService,
       reportsStorageService as never,
-      configService as never,
+      configService,
       notificacionesService as never,
     );
   });

@@ -36,6 +36,9 @@ describe('PostulacionesService', () => {
     notificarNuevaPostulacion: jest.fn(),
     notificarCambioEstadoPostulacion: jest.fn(),
   };
+  const auditoriaService = {
+    registrarSeguro: jest.fn(),
+  };
 
   let service: PostulacionesService;
 
@@ -44,6 +47,7 @@ describe('PostulacionesService', () => {
     service = new PostulacionesService(
       prisma as never,
       notificacionesService as never,
+      auditoriaService as never,
     );
   });
 

@@ -33,6 +33,9 @@ describe('OfertasService', () => {
   const notificacionesService = {
     notificarOfertaModerada: jest.fn(),
   };
+  const auditoriaService = {
+    registrarSeguro: jest.fn(),
+  };
 
   let service: OfertasService;
 
@@ -42,6 +45,7 @@ describe('OfertasService', () => {
       prisma as never,
       empresasService as never,
       notificacionesService as never,
+      auditoriaService as never,
     );
   });
 

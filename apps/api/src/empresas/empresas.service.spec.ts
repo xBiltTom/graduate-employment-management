@@ -28,6 +28,9 @@ describe('EmpresasService', () => {
   const notificacionesService = {
     notificarEmpresaValidada: jest.fn(),
   };
+  const auditoriaService = {
+    registrarSeguro: jest.fn(),
+  };
 
   let service: EmpresasService;
 
@@ -36,6 +39,7 @@ describe('EmpresasService', () => {
     service = new EmpresasService(
       prisma as never,
       notificacionesService as never,
+      auditoriaService as never,
     );
   });
 

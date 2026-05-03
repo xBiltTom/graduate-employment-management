@@ -11,6 +11,7 @@ import {
   TipoEntidadArchivo,
 } from '@graduate-employment-management/database';
 import { ConfigService } from '@nestjs/config';
+import { AuditoriaService } from '../auditoria/auditoria.service';
 import { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -49,6 +50,7 @@ export class ArchivosService {
     private readonly prisma: PrismaService,
     private readonly fileStorageService: FileStorageService,
     private readonly configService: ConfigService,
+    private readonly auditoriaService: AuditoriaService,
   ) {}
 
   async uploadCv(user: AuthenticatedUser, file: UploadableFile | undefined) {
@@ -63,13 +65,27 @@ export class ArchivosService {
     });
     const validFile = this.ensureFilePresent(file);
 
-    return this.replaceExistingForEntity({
+    const created = await this.replaceExistingForEntity({
       file: validFile,
       user,
       categoria: CategoriaArchivo.CV,
       tipoEntidad: TipoEntidadArchivo.EGRESADO,
       entidadId: user.id,
     });
+
+    await this.auditoriaService.registrarSeguro({
+      usuarioId: user.id,
+      accion: 'CV_SUBIDO',
+      entidad: 'Archivo',
+      entidadId: created.id,
+      datosNuevos: {
+        categoria: CategoriaArchivo.CV,
+        mimeType: created.mimeType,
+        tamanio: created.tamanio,
+      },
+    });
+
+    return created;
   }
 
   async uploadLogo(user: AuthenticatedUser, file: UploadableFile | undefined) {
@@ -86,13 +102,27 @@ export class ArchivosService {
     });
     const validFile = this.ensureFilePresent(file);
 
-    return this.replaceExistingForEntity({
+    const created = await this.replaceExistingForEntity({
       file: validFile,
       user,
       categoria: CategoriaArchivo.LOGO,
       tipoEntidad: TipoEntidadArchivo.EMPRESA,
       entidadId: user.id,
     });
+
+    await this.auditoriaService.registrarSeguro({
+      usuarioId: user.id,
+      accion: 'LOGO_SUBIDO',
+      entidad: 'Archivo',
+      entidadId: created.id,
+      datosNuevos: {
+        categoria: CategoriaArchivo.LOGO,
+        mimeType: created.mimeType,
+        tamanio: created.tamanio,
+      },
+    });
+
+    return created;
   }
 
   async getById(user: AuthenticatedUser, input: GetArchivoByIdInput | string) {
@@ -156,6 +186,20 @@ export class ArchivosService {
     await this.prisma.archivo.delete({
       where: {
         id,
+      },
+    });
+
+    await this.auditoriaService.registrarSeguro({
+      usuarioId: user.id,
+      accion: 'ARCHIVO_ELIMINADO',
+      entidad: 'Archivo',
+      entidadId: archivo.id,
+      datosAnteriores: {
+        categoria: archivo.categoria,
+        tipoEntidad: archivo.tipoEntidad,
+        entidadId: archivo.entidadId,
+        mimeType: archivo.mimeType,
+        tamanio: archivo.tamanio,
       },
     });
 

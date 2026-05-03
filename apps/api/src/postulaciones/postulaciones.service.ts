@@ -13,6 +13,7 @@ import {
   RolUsuario,
 } from '@graduate-employment-management/database';
 import { AuthenticatedUser } from '../common/interfaces/authenticated-user.interface';
+import { AuditoriaService } from '../auditoria/auditoria.service';
 import {
   buildPaginationMeta,
   normalizePagination,
@@ -208,6 +209,7 @@ export class PostulacionesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificacionesService: NotificacionesService,
+    private readonly auditoriaService: AuditoriaService,
   ) {}
 
   async postular(egresadoId: string, input: PostularInput) {
@@ -253,7 +255,6 @@ export class PostulacionesService {
     }
 
     let postulacionId = '';
-    // TODO: auditar postulacion creada.
     await this.prisma.$transaction(async (tx) => {
       const postulacion = await tx.postulacion.create({
         data: {
@@ -289,11 +290,25 @@ export class PostulacionesService {
       }),
     );
 
-    return this.getById(postulacionId, {
+    const created = await this.getById(postulacionId, {
       id: egresadoId,
       email: '',
       rol: RolUsuario.EGRESADO,
     });
+
+    await this.auditoriaService.registrarSeguro({
+      usuarioId: egresadoId,
+      accion: 'POSTULACION_CREADA',
+      entidad: 'Postulacion',
+      entidadId: postulacionId,
+      datosNuevos: {
+        ofertaId: oferta.id,
+        egresadoId,
+        estado: EstadoPostulacion.POSTULADO,
+      },
+    });
+
+    return created;
   }
 
   async misPostulaciones(egresadoId: string, input: MisPostulacionesInput) {
@@ -418,7 +433,6 @@ export class PostulacionesService {
     }
 
     this.assertTransitionPermitida(postulacion.estado, input.nuevoEstado);
-    // TODO: auditar cambio de estado de postulacion.
     await this.prisma.$transaction(async (tx) => {
       await tx.postulacion.update({
         where: { id: input.postulacionId },
@@ -448,7 +462,23 @@ export class PostulacionesService {
       }),
     );
 
-    return this.getById(input.postulacionId, actor);
+    const updated = await this.getById(input.postulacionId, actor);
+
+    await this.auditoriaService.registrarSeguro({
+      usuarioId: actor.id,
+      accion: 'POSTULACION_ESTADO_CAMBIADO',
+      entidad: 'Postulacion',
+      entidadId: input.postulacionId,
+      datosAnteriores: {
+        estado: postulacion.estado,
+      },
+      datosNuevos: {
+        estado: input.nuevoEstado,
+        motivo: input.motivo?.trim() ?? null,
+      },
+    });
+
+    return updated;
   }
 
   async historial(postulacionId: string, viewer: AuthenticatedUser) {

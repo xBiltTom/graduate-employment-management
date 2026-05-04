@@ -1,5 +1,5 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
+import { GraduateOffersPage } from "@/components/graduate/graduate-offers-page";
 
 export default function Page() {
-  return <PagePlaceholder title="egresado egresado ofertas" />
+  return <GraduateOffersPage />;
 }

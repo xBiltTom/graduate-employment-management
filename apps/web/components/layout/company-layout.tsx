@@ -1,8 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { ROUTES } from '@/lib/routes';
-import { Briefcase, Building2, LayoutDashboard, Settings, Users } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Briefcase, Building2, LayoutDashboard, Users } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 
 export function CompanyLayout({ children }: { children: React.ReactNode }) {

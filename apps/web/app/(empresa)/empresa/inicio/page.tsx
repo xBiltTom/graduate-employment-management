@@ -1,5 +1,5 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
+import { CompanyHomePage } from "@/components/company/company-home-page";
 
 export default function Page() {
-  return <PagePlaceholder title="empresa empresa inicio" />
+  return <CompanyHomePage />;
 }

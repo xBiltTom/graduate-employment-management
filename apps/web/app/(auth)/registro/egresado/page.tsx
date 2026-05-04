@@ -1,5 +1,5 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
+import { RegisterGraduatePage } from "@/components/auth/register-graduate-page";
 
 export default function Page() {
-  return <PagePlaceholder title="auth registro egresado" />
+  return <RegisterGraduatePage />;
 }

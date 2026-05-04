@@ -1,5 +1,5 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
+import { LoginPage } from "@/components/auth/login-page";
 
 export default function Page() {
-  return <PagePlaceholder title="auth login" />
+  return <LoginPage />;
 }

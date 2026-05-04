@@ -1,5 +1,5 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
+import { RegisterPage } from "@/components/auth/register-page";
 
 export default function Page() {
-  return <PagePlaceholder title="auth registro" />
+  return <RegisterPage />;
 }

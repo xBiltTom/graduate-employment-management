@@ -1,5 +1,5 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
+import { RegisterCompanyPage } from "@/components/auth/register-company-page";
 
 export default function Page() {
-  return <PagePlaceholder title="auth registro empresa" />
+  return <RegisterCompanyPage />;
 }

@@ -67,6 +67,8 @@
 
 | Procedimiento | Acceso | Descripcion |
 |---|---|---|
+| `publicFeed` | Publico | Lista ofertas activas visibles sin requerir sesion. |
+| `publicGetById` | Publico | Obtiene detalle de una oferta activa sin requerir sesion. |
 | `feed` | Usuario autenticado | Lista ofertas visibles segun rol. |
 | `getById` | Usuario autenticado | Obtiene detalle de una oferta segun permisos. |
 | `misOfertas` | `EMPRESA` | Lista ofertas propias de la empresa. |

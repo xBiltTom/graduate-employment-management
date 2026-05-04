@@ -88,12 +88,15 @@
 - Current session: conectado
 
 ## Public offers integration
-- List endpoint/procedure: `trpc ofertas.feed`
-- Detail endpoint/procedure: `trpc ofertas.getById`
-- Auth required: Sí, ambos son `protectedProcedure`
+- Backend now exposes:
+  - `ofertas.publicFeed`
+  - `ofertas.publicGetById`
+- These are public tRPC procedures and do not require session.
+- Frontend publicService uses:
+  - `ofertas.publicFeed` for list/landing
+  - `ofertas.publicGetById` for detail
 - Response shape:
   - list: `{ data, meta }`
   - detail: oferta con empresa y habilidades
 - Missing/unclear:
-  - No existe contrato realmente público para ofertas sin sesión
   - No existe endpoint de estadísticas públicas

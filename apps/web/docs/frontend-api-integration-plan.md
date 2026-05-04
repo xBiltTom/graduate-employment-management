@@ -52,7 +52,18 @@
 - Public stats: mock fallback
 - Mode: works in mock and api
 
+## Public offers integration
+
+Backend now exposes:
+- ofertas.publicFeed
+- ofertas.publicGetById
+
+These are public tRPC procedures and do not require session.
+
+Frontend publicService uses:
+- ofertas.publicFeed for list/landing
+- ofertas.publicGetById for detail
+
 ## Pending
 - Public stats endpoint not available
 - AppRouter typing still pending
-- Public offers backend contract still requires authenticated user

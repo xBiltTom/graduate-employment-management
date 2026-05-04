@@ -10,18 +10,10 @@ type BackendFeedResponse = {
 
 const untypedTrpcClient = getUntypedClient(trpcClient);
 
-function getMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "No se pudo completar la operación";
-}
-
 export const publicApiService = {
   async getFeaturedJobs() {
     try {
-      const response = await untypedTrpcClient.query("ofertas.feed", {
+      const response = await untypedTrpcClient.query("ofertas.publicFeed", {
         page: 1,
         limit: 6,
       });
@@ -31,12 +23,6 @@ export const publicApiService = {
 
       return items.map(mapBackendOfferToJobSummary);
     } catch (error) {
-      const message = getMessage(error);
-
-      if (message.toLowerCase().includes("autentic") || message.toLowerCase().includes("unauthorized")) {
-        return [];
-      }
-
       throw error;
     }
   },
@@ -47,7 +33,7 @@ export const publicApiService = {
 
   async getJobById(id: string) {
     try {
-      const response = await untypedTrpcClient.query("ofertas.getById", { id });
+      const response = await untypedTrpcClient.query("ofertas.publicGetById", { id });
 
       if (!response) {
         return null;
@@ -55,12 +41,6 @@ export const publicApiService = {
 
       return mapBackendOfferToJobSummary(response as BackendPublicOffer);
     } catch (error) {
-      const message = getMessage(error);
-
-      if (message.toLowerCase().includes("autentic") || message.toLowerCase().includes("unauthorized")) {
-        return null;
-      }
-
       throw error;
     }
   },

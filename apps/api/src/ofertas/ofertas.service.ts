@@ -134,6 +134,27 @@ export class OfertasService {
     };
   }
 
+  async publicFeed(input: FeedOfertasInput) {
+    const pagination = normalizePagination(input.page, input.limit);
+    const where = this.buildPublicFeedWhere(input);
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.ofertaLaboral.findMany({
+        where,
+        select: publicOfertaSelect,
+        skip: pagination.skip,
+        take: pagination.take,
+        orderBy: [{ publicadoEn: 'desc' }, { creadoEn: 'desc' }],
+      }),
+      this.prisma.ofertaLaboral.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: buildPaginationMeta(total, pagination.page, pagination.limit),
+    };
+  }
+
   async getById(id: string, viewer: AuthenticatedUser) {
     if (viewer.rol === RolUsuario.ADMINISTRADOR) {
       return this.getOfertaOrFail(id, privateOfertaSelect);
@@ -169,6 +190,23 @@ export class OfertasService {
       return publica;
     }
 
+    const oferta = await this.prisma.ofertaLaboral.findUnique({
+      where: { id },
+      select: publicOfertaSelect,
+    });
+
+    if (!oferta) {
+      throw new NotFoundException('Oferta no encontrada');
+    }
+
+    if (!this.isOfertaPublica(oferta.estado)) {
+      throw new ForbiddenException('No tienes acceso a esta oferta');
+    }
+
+    return oferta;
+  }
+
+  async publicGetById(id: string) {
     const oferta = await this.prisma.ofertaLaboral.findUnique({
       where: { id },
       select: publicOfertaSelect,
@@ -652,6 +690,28 @@ export class OfertasService {
     input: FeedOfertasInput,
     viewer: AuthenticatedUser,
   ): Prisma.OfertaLaboralWhereInput {
+    return {
+      ...(viewer.rol === RolUsuario.ADMINISTRADOR
+        ? {}
+        : {
+            estado: EstadoOferta.ACTIVA,
+          }),
+      ...this.buildSharedFeedFilters(input),
+    };
+  }
+
+  private buildPublicFeedWhere(
+    input: FeedOfertasInput,
+  ): Prisma.OfertaLaboralWhereInput {
+    return {
+      estado: EstadoOferta.ACTIVA,
+      ...this.buildSharedFeedFilters(input),
+    };
+  }
+
+  private buildSharedFeedFilters(
+    input: FeedOfertasInput,
+  ): Prisma.OfertaLaboralWhereInput {
     const search = input.search?.trim();
     const searchFilters: Prisma.OfertaLaboralWhereInput[] = [];
 
@@ -683,11 +743,6 @@ export class OfertasService {
     }
 
     return {
-      ...(viewer.rol === RolUsuario.ADMINISTRADOR
-        ? {}
-        : {
-            estado: EstadoOferta.ACTIVA,
-          }),
       ...(searchFilters.length > 0 ? { OR: searchFilters } : {}),
       ...(input.modalidad ? { modalidad: input.modalidad } : {}),
       ...(input.tipoContrato ? { tipoContrato: input.tipoContrato } : {}),

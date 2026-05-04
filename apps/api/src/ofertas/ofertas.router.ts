@@ -24,6 +24,16 @@ export class OfertasRouter {
     private readonly ofertasService: OfertasService,
   ) {
     this.router = this.trpc.router({
+      publicFeed: this.trpc.publicProcedure
+        .input(feedOfertasSchema.optional().default({}))
+        .query(({ input }) => {
+          return this.ofertasService.publicFeed(input);
+        }),
+      publicGetById: this.trpc.publicProcedure
+        .input(getOfertaByIdSchema)
+        .query(({ input }) => {
+          return this.ofertasService.publicGetById(input.id);
+        }),
       feed: this.trpc.protectedProcedure
         .input(feedOfertasSchema.optional().default({}))
         .query(({ ctx, input }) => {

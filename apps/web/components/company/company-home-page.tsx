@@ -4,17 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CompanyKpiCard } from "@/components/company/company-kpi-card";
 import { ApplicantStatusBadge } from "@/components/company/applicant-status-badge";
-import { mockCompanyApplicants, mockCompanyOffers, mockCompanyProfile } from "@/lib/mock-data";
 import { offerStatuses } from "@/lib/constants";
 import { ROUTES } from "@/lib/routes";
-
-const activeOffers = mockCompanyOffers.filter((offer) => offer.status === offerStatuses.active).length;
-const totalApplications = mockCompanyOffers.reduce((acc, offer) => acc + offer.applicationsCount, 0);
-const interviews = mockCompanyOffers.reduce((acc, offer) => acc + offer.interviewCount, 0);
-const hired = mockCompanyOffers.reduce((acc, offer) => acc + offer.hiredCount, 0);
-const conversion = totalApplications > 0 ? Math.round((hired / totalApplications) * 100) : 0;
+import { companyService } from "@/services";
 
 export function CompanyHomePage() {
+  const mockCompanyProfile = companyService.getProfile();
+  const mockCompanyOffers = companyService.getOffers();
+  const mockCompanyApplicants = companyService.getApplicantsByOfferId("job-1");
+  const activeOffers = mockCompanyOffers.filter((offer) => offer.status === offerStatuses.active).length;
+  const totalApplications = mockCompanyOffers.reduce((acc, offer) => acc + offer.applicationsCount, 0);
+  const interviews = mockCompanyOffers.reduce((acc, offer) => acc + offer.interviewCount, 0);
+  const hired = mockCompanyOffers.reduce((acc, offer) => acc + offer.hiredCount, 0);
+  const conversion = totalApplications > 0 ? Math.round((hired / totalApplications) * 100) : 0;
   const recentOffers = mockCompanyOffers.filter((offer) => offer.job).slice(0, 2);
   const recentApplicants = mockCompanyApplicants.slice(0, 3);
 

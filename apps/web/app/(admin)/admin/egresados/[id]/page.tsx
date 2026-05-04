@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { AdminGraduateDetailPage } from "@/components/admin/admin-graduate-detail-page";
-import { mockAdminGraduates, mockAdminOffers, mockCompanyApplicants } from "@/lib/mock-data";
+import { adminService, companyService } from "@/services";
 
 export default async function Page({
   params,
@@ -8,16 +8,17 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const graduate = mockAdminGraduates.find((item) => item.id === id);
+  const graduate = adminService.getGraduateById(id);
 
   if (!graduate) {
     notFound();
   }
 
-  const applications = mockCompanyApplicants
+  const applications = companyService
+    .getApplicantsByOfferId("job-1")
     .filter((application) => application.graduateId === id)
     .map((application) => {
-      const offer = mockAdminOffers.find((item) => item.id === application.offerId);
+      const offer = adminService.getOfferById(application.offerId);
 
       return {
         id: application.applicationId,

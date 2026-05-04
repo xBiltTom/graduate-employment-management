@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ROUTES } from "@/lib/routes";
+import { publicService } from "@/services";
 
-import { featuredJobs, publicStats } from "@/lib/mock-data";
+const featuredJobs = publicService.getFeaturedJobs();
+const publicStats = publicService.getPublicStats();
 
 function HeroSection() {
   return (

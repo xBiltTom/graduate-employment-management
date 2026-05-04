@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/lib/routes";
-import { featuredJobs } from "@/lib/mock-data";
+import { publicService } from "@/services";
+
+const featuredJobs = publicService.getFeaturedJobs();
 
 function PublicOfferCard({
   job,

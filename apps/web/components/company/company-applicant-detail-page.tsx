@@ -5,27 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApplicantStatusBadge } from "@/components/company/applicant-status-badge";
+import type { CompanyApplicant } from "@/types";
 
-type ApplicantDetail = {
-  nombres: string;
-  apellidos: string;
-  carrera: string;
-  anioEgreso: number;
-  ciudad: string;
-  region: string;
-  email: string;
-  telefono: string;
-  match: number;
-  status: string;
-  presentacion: string;
-  skills: string[];
-  archivos: { id: string; nombreArchivo: string; mimeType: string; tamanio: number }[];
-  formaciones: { institucion: string; grado: string; campo: string; fechaInicio: string; fechaFin: string; descripcion: string }[];
-  experiencias: { empresa: string; cargo: string; fechaInicio: string; fechaFin: string; descripcion: string }[];
-  historial: { id: string; estadoAnterior: string | null; estadoNuevo: string; creadoEn: string }[];
-};
-
-export function CompanyApplicantDetailPage({ applicant }: { applicant: ApplicantDetail }) {
+export function CompanyApplicantDetailPage({ applicant }: { applicant: CompanyApplicant }) {
   const action = (message: string) => toast.success(message, { description: "Acción temporal. La integración real llegará después." });
 
   return (
@@ -42,7 +24,7 @@ export function CompanyApplicantDetailPage({ applicant }: { applicant: Applicant
                   <ApplicantStatusBadge status={applicant.status} />
                 </div>
                 <p className="text-[var(--color-text-muted)]">
-                  {applicant.carrera} · {applicant.ciudad}, {applicant.region} · egreso {applicant.anioEgreso}
+                  {applicant.carrera} · {applicant.ciudad}, {applicant.region ?? "Sin región"} · egreso {applicant.anioEgreso}
                 </p>
               </div>
               <div className="rounded-[28px] border border-[var(--color-border-subtle)] bg-[var(--color-surface-page)] px-5 py-4 text-center">
@@ -54,12 +36,12 @@ export function CompanyApplicantDetailPage({ applicant }: { applicant: Applicant
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-2xl bg-[var(--color-surface-page)] p-4 text-sm">
                 <p className="font-medium text-[var(--color-text-heading)]">Contacto</p>
-                <p className="mt-2 text-[var(--color-text-body)]">{applicant.email}</p>
-                <p className="mt-1 text-[var(--color-text-body)]">{applicant.telefono}</p>
+                <p className="mt-2 text-[var(--color-text-body)]">{applicant.email ?? "Sin email"}</p>
+                <p className="mt-1 text-[var(--color-text-body)]">{applicant.telefono ?? "Sin teléfono"}</p>
               </div>
               <div className="rounded-2xl bg-[var(--color-surface-page)] p-4 text-sm">
                 <p className="font-medium text-[var(--color-text-heading)]">Resumen profesional</p>
-                <p className="mt-2 leading-6 text-[var(--color-text-body)]">{applicant.presentacion}</p>
+                <p className="mt-2 leading-6 text-[var(--color-text-body)]">{applicant.presentacion ?? "Sin resumen registrado."}</p>
               </div>
             </div>
 
@@ -97,7 +79,7 @@ export function CompanyApplicantDetailPage({ applicant }: { applicant: Applicant
             <div>
               <p className="mb-3 text-sm font-semibold text-[var(--color-text-heading)]">Experiencia</p>
               <div className="space-y-4">
-                {applicant.experiencias.map((experience) => (
+                {(applicant.experiencias ?? []).map((experience) => (
                   <div key={`${experience.empresa}-${experience.cargo}`} className="rounded-2xl bg-[var(--color-surface-page)] p-4">
                     <p className="font-semibold text-[var(--color-text-heading)]">{experience.cargo}</p>
                     <p className="mt-1 text-sm text-[var(--color-text-muted)]">{experience.empresa} · {experience.fechaInicio} - {experience.fechaFin}</p>
@@ -109,7 +91,7 @@ export function CompanyApplicantDetailPage({ applicant }: { applicant: Applicant
             <div>
               <p className="mb-3 text-sm font-semibold text-[var(--color-text-heading)]">Formación</p>
               <div className="space-y-4">
-                {applicant.formaciones.map((education) => (
+                {(applicant.formaciones ?? []).map((education) => (
                   <div key={`${education.institucion}-${education.grado}`} className="rounded-2xl bg-[var(--color-surface-page)] p-4">
                     <p className="font-semibold text-[var(--color-text-heading)]">{education.grado}</p>
                     <p className="mt-1 text-sm text-[var(--color-text-muted)]">{education.institucion} · {education.fechaInicio} - {education.fechaFin}</p>
@@ -125,7 +107,7 @@ export function CompanyApplicantDetailPage({ applicant }: { applicant: Applicant
           <Card className="border-[var(--color-border-subtle)] shadow-sm">
             <CardHeader><CardTitle className="font-[var(--font-heading)] text-xl text-[var(--color-text-heading)]">Archivos</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {applicant.archivos.length ? (
+              {applicant.archivos?.length ? (
                 applicant.archivos.map((file) => (
                   <div key={file.id} className="rounded-2xl border border-[var(--color-border-subtle)] p-4 text-sm">
                     <p className="font-medium text-[var(--color-text-heading)]">{file.nombreArchivo}</p>
@@ -143,7 +125,7 @@ export function CompanyApplicantDetailPage({ applicant }: { applicant: Applicant
           <Card className="border-[var(--color-border-subtle)] shadow-sm">
             <CardHeader><CardTitle className="font-[var(--font-heading)] text-xl text-[var(--color-text-heading)]">Historial de postulación</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {applicant.historial.map((entry) => (
+              {(applicant.historial ?? []).map((entry) => (
                 <div key={entry.id} className="rounded-2xl bg-[var(--color-surface-page)] p-4 text-sm">
                   <p className="font-medium text-[var(--color-text-heading)]">{entry.estadoNuevo}</p>
                   <p className="mt-1 text-[var(--color-text-muted)]">{entry.creadoEn}</p>

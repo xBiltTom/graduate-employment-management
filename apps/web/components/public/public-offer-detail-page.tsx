@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ROUTES } from "@/lib/routes";
-import { featuredJobs } from "@/lib/mock-data";
+import { publicService } from "@/services";
 
 export function PublicOfferDetailPage({ id }: { id: string }) {
-  const job = featuredJobs.find((j) => j.id === id);
+  const job = publicService.getJobById(id);
 
   if (!job) {
     notFound();

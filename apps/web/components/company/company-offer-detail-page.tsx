@@ -7,27 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ROUTES } from "@/lib/routes";
 import { ApplicantStatusBadge } from "@/components/company/applicant-status-badge";
+import type { CompanyOfferSummary, JobSummary } from "@/types";
 
-type OfferRecord = {
-  id: string;
-  job: {
-    title: string;
-    location: string;
-    modality: string;
-    contractType: string;
-    salaryRange?: string;
-    description: string;
-    requirements: string[];
-    skills: string[];
-    closingDate: string;
-    publishedDate: string;
-  };
-  status: string;
-  applicationsCount: number;
-  reviewingCount: number;
-  interviewCount: number;
-  hiredCount: number;
-};
+type OfferRecord = CompanyOfferSummary & { job: JobSummary };
 
 type ApplicantRecord = {
   id: string;
@@ -83,11 +65,11 @@ export function CompanyOfferDetailPage({
             <CardTitle className="font-[var(--font-heading)] text-xl text-[var(--color-text-heading)]">Descripción de la vacante</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <p className="leading-7 text-[var(--color-text-body)]">{offer.job.description}</p>
+            <p className="leading-7 text-[var(--color-text-body)]">{offer.job.description ?? "Sin descripción disponible."}</p>
             <div>
               <p className="mb-3 text-sm font-semibold text-[var(--color-text-heading)]">Requisitos</p>
               <ul className="space-y-2 text-sm text-[var(--color-text-body)]">
-                {offer.job.requirements.map((requirement) => (
+                {(offer.job.requirements ?? []).map((requirement) => (
                   <li key={requirement} className="flex gap-3">
                     <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[var(--color-brand)]" />
                     <span>{requirement}</span>

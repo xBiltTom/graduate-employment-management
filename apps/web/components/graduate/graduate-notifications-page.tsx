@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const getIconForType = (type: string) => {
+const getIconForType = (type?: string) => {
   switch (type) {
     case "NEW_OFFER":
       return <Briefcase className="h-5 w-5 text-blue-600" />;
@@ -26,7 +26,7 @@ const getIconForType = (type: string) => {
   }
 };
 
-const getBgForType = (type: string) => {
+const getBgForType = (type?: string) => {
   switch (type) {
     case "NEW_OFFER":
       return "bg-blue-100";

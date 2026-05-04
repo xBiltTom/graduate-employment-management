@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { CompanyOfferDetailPage } from "@/components/company/company-offer-detail-page";
-import { mockCompanyApplicants, mockCompanyOffers } from "@/lib/mock-data";
+import { companyService } from "@/services";
 
 export default async function Page({
   params,
@@ -8,14 +8,14 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const offer = mockCompanyOffers.find((item) => item.id === id && item.job);
+  const offer = companyService.getOfferById(id);
 
   if (!offer?.job) {
     notFound();
   }
 
-  const applicants = mockCompanyApplicants
-    .filter((item) => item.offerId === id)
+  const applicants = companyService
+    .getApplicantsByOfferId(id)
     .map((item) => ({
       id: item.id,
       nombres: item.nombres,

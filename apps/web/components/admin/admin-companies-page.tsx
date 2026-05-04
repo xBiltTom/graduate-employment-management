@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockAdminCompanies } from "@/lib/mock-data";
+import { companyValidationStatuses } from "@/lib/constants";
 import { ROUTES } from "@/lib/routes";
 
 export function AdminCompaniesPage() {
@@ -27,9 +28,9 @@ export function AdminCompaniesPage() {
       <Tabs value={status} onValueChange={setStatus} className="w-full">
         <TabsList className="h-auto w-full flex-wrap justify-start border border-[var(--color-border-subtle)] bg-white p-1">
           <TabsTrigger value="all">Todas</TabsTrigger>
-          <TabsTrigger value="PENDIENTE">Pendientes</TabsTrigger>
-          <TabsTrigger value="APROBADA">Aprobadas</TabsTrigger>
-          <TabsTrigger value="RECHAZADA">Rechazadas</TabsTrigger>
+          <TabsTrigger value={companyValidationStatuses.pending}>Pendientes</TabsTrigger>
+          <TabsTrigger value={companyValidationStatuses.approved}>Aprobadas</TabsTrigger>
+          <TabsTrigger value={companyValidationStatuses.rejected}>Rechazadas</TabsTrigger>
         </TabsList>
       </Tabs>
 

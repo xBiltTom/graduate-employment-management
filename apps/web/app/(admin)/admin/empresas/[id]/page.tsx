@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { AdminCompanyDetailPage } from "@/components/admin/admin-company-detail-page";
-import { mockAdminCompanies } from "@/lib/mock-data";
+import { adminService } from "@/services";
 
 export default async function Page({
   params,
@@ -8,7 +8,7 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const company = mockAdminCompanies.find((item) => item.id === id);
+  const company = adminService.getCompanyById(id);
 
   if (!company) {
     notFound();

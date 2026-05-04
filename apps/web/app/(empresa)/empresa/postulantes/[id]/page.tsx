@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { CompanyApplicantDetailPage } from "@/components/company/company-applicant-detail-page";
-import { mockCompanyApplicants } from "@/lib/mock-data";
+import { companyService } from "@/services";
 
 export default async function Page({
   params,
@@ -8,7 +8,7 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const applicant = mockCompanyApplicants.find((item) => item.id === id);
+  const applicant = companyService.getApplicantById(id);
 
   if (!applicant) {
     notFound();

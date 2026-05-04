@@ -4,25 +4,12 @@ import { toast } from "sonner";
 import { AdminSectionCard } from "@/components/admin/admin-section-card";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
+import type { AdminCompany } from "@/types";
 
 export function AdminCompanyDetailPage({
   company,
 }: {
-  company: {
-    nombreComercial: string;
-    razonSocial: string;
-    ruc: string;
-    sector: string;
-    email: string;
-    telefono: string;
-    sitioWeb: string;
-    ciudad: string;
-    region: string;
-    descripcion: string;
-    estadoValidacion: string;
-    ofertasPublicadas: number;
-    fechaRegistro: string;
-  };
+  company: AdminCompany;
 }) {
   return (
     <div className="space-y-6 animate-fade-up">
@@ -47,9 +34,9 @@ export function AdminCompanyDetailPage({
             <div><p className="text-sm font-semibold text-[var(--color-text-heading)]">RUC</p><p className="mt-2 text-[var(--color-text-body)]">{company.ruc}</p></div>
             <div><p className="text-sm font-semibold text-[var(--color-text-heading)]">Sector</p><p className="mt-2 text-[var(--color-text-body)]">{company.sector}</p></div>
             <div><p className="text-sm font-semibold text-[var(--color-text-heading)]">Correo</p><p className="mt-2 text-[var(--color-text-body)]">{company.email}</p></div>
-            <div><p className="text-sm font-semibold text-[var(--color-text-heading)]">Teléfono</p><p className="mt-2 text-[var(--color-text-body)]">{company.telefono}</p></div>
-            <div><p className="text-sm font-semibold text-[var(--color-text-heading)]">Sitio web</p><p className="mt-2 text-[var(--color-text-body)]">{company.sitioWeb}</p></div>
-            <div><p className="text-sm font-semibold text-[var(--color-text-heading)]">Ubicación</p><p className="mt-2 text-[var(--color-text-body)]">{company.ciudad}, {company.region}</p></div>
+            <div><p className="text-sm font-semibold text-[var(--color-text-heading)]">Teléfono</p><p className="mt-2 text-[var(--color-text-body)]">{company.telefono ?? "Sin teléfono"}</p></div>
+            <div><p className="text-sm font-semibold text-[var(--color-text-heading)]">Sitio web</p><p className="mt-2 text-[var(--color-text-body)]">{company.sitioWeb ?? "Sin sitio web"}</p></div>
+            <div><p className="text-sm font-semibold text-[var(--color-text-heading)]">Ubicación</p><p className="mt-2 text-[var(--color-text-body)]">{company.ciudad ?? "Ciudad"}, {company.region ?? "Región"}</p></div>
           </div>
         </AdminSectionCard>
 
@@ -57,7 +44,7 @@ export function AdminCompanyDetailPage({
           <div className="space-y-4">
             <div className="rounded-2xl bg-[var(--color-surface-page)] p-4">
               <p className="text-sm font-semibold text-[var(--color-text-heading)]">Descripción</p>
-              <p className="mt-2 leading-7 text-[var(--color-text-body)]">{company.descripcion}</p>
+              <p className="mt-2 leading-7 text-[var(--color-text-body)]">{company.descripcion ?? "Sin descripción registrada."}</p>
             </div>
             <div className="rounded-2xl bg-[var(--color-surface-page)] p-4">
               <p className="text-sm font-semibold text-[var(--color-text-heading)]">Ofertas publicadas</p>

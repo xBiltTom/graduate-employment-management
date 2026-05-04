@@ -5,28 +5,13 @@ import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { AdminSectionCard } from "@/components/admin/admin-section-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { AdminGraduate } from "@/types";
 
 export function AdminGraduateDetailPage({
   graduate,
   applications,
 }: {
-  graduate: {
-    id: string;
-    nombres: string;
-    apellidos: string;
-    email: string;
-    telefono: string;
-    carrera: string;
-    anioEgreso: number;
-    ciudad: string;
-    region: string;
-    estado: string;
-    postulaciones: number;
-    habilidades: string[];
-    presentacion: string;
-    archivos: { id: string; nombreArchivo: string; mimeType: string; tamanio: number }[];
-    historial: { id: string; resumen: string; fecha: string }[];
-  };
+  graduate: AdminGraduate;
   applications: { id: string; title: string; company: string; status: string; appliedAt: string }[];
 }) {
   return (
@@ -53,7 +38,7 @@ export function AdminGraduateDetailPage({
               <div className="rounded-2xl bg-[var(--color-surface-page)] p-4">
                 <p className="text-sm font-semibold text-[var(--color-text-heading)]">Contacto</p>
                 <p className="mt-2 text-sm text-[var(--color-text-body)]">{graduate.email}</p>
-                <p className="mt-1 text-sm text-[var(--color-text-body)]">{graduate.telefono}</p>
+                <p className="mt-1 text-sm text-[var(--color-text-body)]">{graduate.telefono ?? "Sin teléfono registrado"}</p>
               </div>
               <div className="rounded-2xl bg-[var(--color-surface-page)] p-4">
                 <p className="text-sm font-semibold text-[var(--color-text-heading)]">Actividad</p>
@@ -89,12 +74,12 @@ export function AdminGraduateDetailPage({
           <div className="space-y-4">
             <div className="rounded-2xl bg-[var(--color-surface-page)] p-4">
               <p className="text-sm font-semibold text-[var(--color-text-heading)]">Archivos</p>
-              {graduate.archivos.length ? graduate.archivos.map((file) => (
+              {graduate.archivos?.length ? graduate.archivos.map((file) => (
                 <p key={file.id} className="mt-2 text-sm text-[var(--color-text-body)]">{file.nombreArchivo} · {(file.tamanio / 1000000).toFixed(1)} MB</p>
               )) : <p className="mt-2 text-sm text-[var(--color-text-muted)]">Sin CV cargado.</p>}
             </div>
             <div className="space-y-3">
-              {graduate.historial.map((entry) => (
+              {graduate.historial?.map((entry) => (
                 <div key={entry.id} className="rounded-2xl bg-[var(--color-surface-page)] p-4 text-sm">
                   <p className="font-medium text-[var(--color-text-heading)]">{entry.resumen}</p>
                   <p className="mt-1 text-[var(--color-text-muted)]">{entry.fecha}</p>

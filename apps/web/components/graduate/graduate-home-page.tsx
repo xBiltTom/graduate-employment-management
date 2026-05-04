@@ -1,12 +1,5 @@
-"use client";
-
 import Link from "next/link";
-import { 
-  mockGraduateProfile, 
-  mockGraduateApplications, 
-  featuredJobs,
-  mockNotifications
-} from "@/lib/mock-data";
+import { graduateService, publicService } from "@/services";
 import { ROUTES } from "@/lib/routes";
 import { applicationStatuses } from "@/lib/constants";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -16,6 +9,10 @@ import { Progress } from "@/components/ui/progress";
 import { Briefcase, ChevronRight, Bell, Clock, Building2, MapPin, CheckCircle2, User } from "lucide-react";
 
 export function GraduateHomePage() {
+  const mockGraduateProfile = graduateService.getProfile();
+  const mockGraduateApplications = graduateService.getApplications();
+  const featuredJobs = publicService.getFeaturedJobs();
+  const mockNotifications = graduateService.getNotifications();
   const recentApplications = mockGraduateApplications.slice(0, 3);
   const unreadNotifications = mockNotifications.filter(n => !n.read).length;
   
@@ -199,9 +196,9 @@ export function GraduateHomePage() {
                   <h3 className="font-semibold text-[var(--color-text-heading)]">Perfil Profesional</h3>
                   <p className="text-sm text-[var(--color-text-muted)] mt-1">Completa tu información para destacar</p>
                 </div>
-                <span className="text-2xl font-bold text-[var(--color-brand)]">{mockGraduateProfile.profileCompletion}%</span>
-              </div>
-              <Progress value={mockGraduateProfile.profileCompletion} className="h-2 mb-6" />
+                  <span className="text-2xl font-bold text-[var(--color-brand)]">{mockGraduateProfile.profileCompletion ?? 0}%</span>
+                </div>
+                <Progress value={mockGraduateProfile.profileCompletion ?? 0} className="h-2 mb-6" />
               
               <div className="space-y-3">
                 <div className="flex items-start gap-3">

@@ -1,16 +1,16 @@
 "use client";
 import { notFound, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { featuredJobs } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { publicService } from "@/services";
 import { Building2, MapPin, Briefcase, Calendar, CheckCircle2, ChevronLeft, AlertCircle, Share2, BookmarkPlus } from "lucide-react";
 
 export function GraduateOfferDetailPage({ id }: { id: string }) {
   const router = useRouter();
-  const job = featuredJobs.find((j) => j.id === id);
+  const job = publicService.getJobById(id);
 
   if (!job) {
     notFound();

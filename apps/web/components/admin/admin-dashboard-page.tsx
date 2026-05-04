@@ -4,13 +4,17 @@ import { AdminKpiCard } from "@/components/admin/admin-kpi-card";
 import { AdminSectionCard } from "@/components/admin/admin-section-card";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
-import { mockAdminCompanies, mockAdminOffers, mockAdminSkills, mockAdminStats } from "@/lib/mock-data";
 import { companyValidationStatuses, offerStatuses } from "@/lib/constants";
 import { ROUTES } from "@/lib/routes";
+import { adminService } from "@/services";
 
 const growthSeries = [42, 58, 66, 71, 84, 92];
 
 export function AdminDashboardPage() {
+  const mockAdminStats = adminService.getStats();
+  const mockAdminCompanies = adminService.getCompanies();
+  const mockAdminOffers = adminService.getOffers();
+  const mockAdminSkills = adminService.getSkills();
   const pendingCompanies = mockAdminCompanies.filter((company) => company.estadoValidacion === companyValidationStatuses.pending);
   const pendingOffers = mockAdminOffers.filter((offer) => offer.estado === offerStatuses.pendingReview);
   const topSkills = mockAdminSkills.slice(0, 4);

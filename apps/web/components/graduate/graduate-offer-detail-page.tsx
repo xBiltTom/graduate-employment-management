@@ -5,12 +5,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { publicService } from "@/services";
 import { Building2, MapPin, Briefcase, Calendar, CheckCircle2, ChevronLeft, AlertCircle, Share2, BookmarkPlus } from "lucide-react";
+import type { JobSummary } from "@/types";
 
-export function GraduateOfferDetailPage({ id }: { id: string }) {
+export function GraduateOfferDetailPage({ job }: { job: JobSummary | null }) {
   const router = useRouter();
-  const job = publicService.getJobById(id);
 
   if (!job) {
     notFound();

@@ -1,13 +1,13 @@
 import { featuredJobs, publicStats } from "@/lib/mocks";
 
 export const publicMockService = {
-  getFeaturedJobs() {
+  async getFeaturedJobs() {
     return featuredJobs;
   },
-  getPublicStats() {
+  async getPublicStats() {
     return publicStats;
   },
-  getJobById(id: string) {
+  async getJobById(id: string) {
     return featuredJobs.find((job) => job.id === id) ?? null;
   },
 };

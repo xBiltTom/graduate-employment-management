@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { graduateService, publicService } from "@/services";
+import { graduateService } from "@/services";
 import { ROUTES } from "@/lib/routes";
 import { applicationStatuses } from "@/lib/constants";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Briefcase, ChevronRight, Bell, Clock, Building2, MapPin, CheckCircle2, User } from "lucide-react";
+import type { JobSummary } from "@/types";
 
-export function GraduateHomePage() {
+export function GraduateHomePage({ featuredJobs }: { featuredJobs: JobSummary[] }) {
   const mockGraduateProfile = graduateService.getProfile();
   const mockGraduateApplications = graduateService.getApplications();
-  const featuredJobs = publicService.getFeaturedJobs();
   const mockNotifications = graduateService.getNotifications();
   const recentApplications = mockGraduateApplications.slice(0, 3);
   const unreadNotifications = mockNotifications.filter(n => !n.read).length;

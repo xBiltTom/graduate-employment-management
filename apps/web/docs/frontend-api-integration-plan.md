@@ -45,3 +45,14 @@
 ## Notes
 - Cookies HTTP-only handled by browser.
 - No tokens stored in localStorage/sessionStorage.
+
+## Public offers integration status
+- List/feed: conectado
+- Detail: conectado
+- Public stats: mock fallback
+- Mode: works in mock and api
+
+## Pending
+- Public stats endpoint not available
+- AppRouter typing still pending
+- Public offers backend contract still requires authenticated user

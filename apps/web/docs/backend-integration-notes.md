@@ -86,3 +86,14 @@
 - Register company: conectado
 - Logout: conectado
 - Current session: conectado
+
+## Public offers integration
+- List endpoint/procedure: `trpc ofertas.feed`
+- Detail endpoint/procedure: `trpc ofertas.getById`
+- Auth required: Sí, ambos son `protectedProcedure`
+- Response shape:
+  - list: `{ data, meta }`
+  - detail: oferta con empresa y habilidades
+- Missing/unclear:
+  - No existe contrato realmente público para ofertas sin sesión
+  - No existe endpoint de estadísticas públicas

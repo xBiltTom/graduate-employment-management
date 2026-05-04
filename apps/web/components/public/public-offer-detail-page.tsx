@@ -5,11 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ROUTES } from "@/lib/routes";
-import { publicService } from "@/services";
+import type { JobSummary } from "@/types";
 
-export function PublicOfferDetailPage({ id }: { id: string }) {
-  const job = publicService.getJobById(id);
-
+export function PublicOfferDetailPage({ job, errorMessage }: { job: JobSummary | null; errorMessage?: string }) {
   if (!job) {
     notFound();
   }
@@ -17,6 +15,11 @@ export function PublicOfferDetailPage({ id }: { id: string }) {
   return (
     <div className="py-12">
       <div className="mx-auto max-w-[1280px] px-6">
+        {errorMessage ? (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {errorMessage}
+          </div>
+        ) : null}
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-[var(--color-text-muted)] mb-8 animate-fade-up">
           <Link

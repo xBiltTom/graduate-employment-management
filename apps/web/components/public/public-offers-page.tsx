@@ -4,14 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/lib/routes";
-import { publicService } from "@/services";
-
-const featuredJobs = publicService.getFeaturedJobs();
+import type { JobSummary } from "@/types";
 
 function PublicOfferCard({
   job,
 }: {
-  job: (typeof featuredJobs)[number];
+  job: JobSummary;
 }) {
   return (
     <Link href={ROUTES.PUBLIC.OFERTA_DETAIL(job.id)}>
@@ -105,8 +103,13 @@ function PublicOfferCard({
   );
 }
 
-export function PublicOffersPage() {
-  const jobs = featuredJobs;
+export function PublicOffersPage({
+  jobs,
+  errorMessage,
+}: {
+  jobs: JobSummary[];
+  errorMessage?: string;
+}) {
   const hasJobs = jobs.length > 0;
 
   return (
@@ -121,6 +124,9 @@ export function PublicOffersPage() {
             Explora oportunidades laborales diseñadas para tu perfil
             profesional. Filtra por ubicación, modalidad o área de interés.
           </p>
+          {errorMessage ? (
+            <p className="text-sm text-amber-700">{errorMessage}</p>
+          ) : null}
         </div>
 
         {/* Search bar */}

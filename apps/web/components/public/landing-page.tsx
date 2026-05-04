@@ -3,12 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ROUTES } from "@/lib/routes";
-import { publicService } from "@/services";
+import type { JobSummary, PublicStat } from "@/types";
 
-const featuredJobs = publicService.getFeaturedJobs();
-const publicStats = publicService.getPublicStats();
-
-function HeroSection() {
+function HeroSection({ publicStats }: { publicStats: PublicStat[] }) {
   return (
     <section className="relative overflow-hidden hero-gradient-subtle">
       {/* Decorative elements */}
@@ -218,7 +215,7 @@ function BenefitsSection() {
   );
 }
 
-function FeaturedOffersSection() {
+function FeaturedOffersSection({ featuredJobs }: { featuredJobs: JobSummary[] }) {
   return (
     <section className="py-20 bg-[var(--color-surface-page)]">
       <div className="mx-auto max-w-[1280px] px-6">
@@ -306,7 +303,7 @@ function FeaturedOffersSection() {
   );
 }
 
-function StatsSection() {
+function StatsSection({ publicStats }: { publicStats: PublicStat[] }) {
   return (
     <section className="py-16 hero-gradient">
       <div className="mx-auto max-w-[1280px] px-6">
@@ -360,13 +357,28 @@ function CtaSection() {
   );
 }
 
-export function LandingPage() {
+export function LandingPage({
+  featuredJobs,
+  publicStats,
+  errorMessage,
+}: {
+  featuredJobs: JobSummary[];
+  publicStats: PublicStat[];
+  errorMessage?: string;
+}) {
   return (
     <>
-      <HeroSection />
+      {errorMessage ? (
+        <section className="border-b border-[var(--color-border-subtle)] bg-amber-50/80">
+          <div className="mx-auto max-w-[1280px] px-6 py-3 text-sm text-amber-800">
+            {errorMessage}
+          </div>
+        </section>
+      ) : null}
+      <HeroSection publicStats={publicStats} />
       <BenefitsSection />
-      <FeaturedOffersSection />
-      <StatsSection />
+      <FeaturedOffersSection featuredJobs={featuredJobs} />
+      <StatsSection publicStats={publicStats} />
       <CtaSection />
     </>
   );

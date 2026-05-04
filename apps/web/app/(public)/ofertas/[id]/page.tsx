@@ -1,5 +1,10 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
+import { PublicOfferDetailPage } from '@/components/public/public-offer-detail-page';
 
-export default function Page() {
-  return <PagePlaceholder title="public ofertas Detalle" />
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function Page({ params }: PageProps) {
+  const resolvedParams = await params;
+  return <PublicOfferDetailPage id={resolvedParams.id} />;
 }

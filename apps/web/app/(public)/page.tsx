@@ -1,5 +1,5 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
+import { LandingPage } from '@/components/public/landing-page';
 
 export default function Page() {
-  return <PagePlaceholder title="public" />
+  return <LandingPage />;
 }

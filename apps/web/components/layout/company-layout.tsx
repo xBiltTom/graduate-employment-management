@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ROUTES } from '@/lib/routes';
 import { Briefcase, Building2, LayoutDashboard, Settings, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 
 export function CompanyLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -38,12 +38,9 @@ export function CompanyLayout({ children }: { children: React.ReactNode }) {
             <Link href={ROUTES.EMPRESA.INICIO} className="font-bold">EmpresaConnect</Link>
           </div>
           <div className="flex items-center gap-4 ml-auto">
-            <Link
-              href={ROUTES.EMPRESA.NUEVA_OFERTA}
-              className={buttonVariants({ variant: 'outline', size: 'sm' })}
-            >
-              Publicar Oferta
-            </Link>
+            <Button variant="outline" size="sm" asChild>
+              <Link href={ROUTES.EMPRESA.NUEVA_OFERTA}>Publicar Oferta</Link>
+            </Button>
             <Avatar className="h-8 w-8 cursor-pointer">
               <AvatarFallback><Users className="h-4 w-4" /></AvatarFallback>
             </Avatar>

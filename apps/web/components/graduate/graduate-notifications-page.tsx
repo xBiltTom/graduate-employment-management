@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { mockNotifications } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getErrorMessage } from "@/lib/errors";
+import { graduateService } from "@/services";
 import { Bell, Briefcase, FileText, CheckCircle2, MoreVertical, Check, Trash2 } from "lucide-react";
 import { 
   DropdownMenu,
@@ -12,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { NotificationItem } from "@/types";
 
 const getIconForType = (type?: string) => {
   switch (type) {
@@ -39,16 +41,34 @@ const getBgForType = (type?: string) => {
   }
 };
 
-export function GraduateNotificationsPage() {
-  const [notifications, setNotifications] = useState(mockNotifications);
+type GraduateNotificationsPageProps = {
+  initialNotifications: NotificationItem[];
+};
+
+export function GraduateNotificationsPage({
+  initialNotifications,
+}: GraduateNotificationsPageProps) {
+  const [notifications, setNotifications] = useState(initialNotifications);
   const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [isSubmittingId, setIsSubmittingId] = useState<string | null>(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const markAsRead = (id: string) => {
-    setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, read: true } : n
-    ));
+  const markAsRead = async (id: string) => {
+    try {
+      setIsSubmittingId(id);
+      await graduateService.markNotificationAsRead(id);
+      setNotifications((current) =>
+        current.map((notification) =>
+          notification.id === id ? { ...notification, read: true } : notification,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      alert(getErrorMessage(error));
+    } finally {
+      setIsSubmittingId(null);
+    }
   };
 
   const markAllAsRead = () => {
@@ -139,10 +159,11 @@ export function GraduateNotificationsPage() {
                         <Button 
                           variant="link" 
                           size="sm" 
-                          onClick={() => markAsRead(notification.id)}
+                          onClick={() => void markAsRead(notification.id)}
+                          disabled={isSubmittingId === notification.id}
                           className="h-auto p-0 text-[var(--color-brand)] font-medium"
                         >
-                          Marcar como leída
+                          {isSubmittingId === notification.id ? "Marcando..." : "Marcar como leída"}
                         </Button>
                       </div>
                     )}
@@ -157,7 +178,7 @@ export function GraduateNotificationsPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="border-[var(--color-border-subtle)]">
                         {!notification.read && (
-                          <DropdownMenuItem onClick={() => markAsRead(notification.id)}>
+                          <DropdownMenuItem onClick={() => void markAsRead(notification.id)}>
                             <Check className="h-4 w-4 mr-2" /> Marcar como leída
                           </DropdownMenuItem>
                         )}

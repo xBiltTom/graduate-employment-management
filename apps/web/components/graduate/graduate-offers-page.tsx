@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { featuredJobs } from "@/lib/mock-data";
 import { ROUTES } from "@/lib/routes";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,13 +9,18 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, MapPin, Filter, Building2, X } from "lucide-react";
+import type { JobSummary } from "@/types";
 
-export function GraduateOffersPage() {
+type GraduateOffersPageProps = {
+  jobs: JobSummary[];
+};
+
+export function GraduateOffersPage({ jobs }: GraduateOffersPageProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterModality, setFilterModality] = useState<string>("all");
   
   // Basic local filtering
-  const filteredJobs = featuredJobs.filter((job) => {
+  const filteredJobs = jobs.filter((job) => {
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          job.skills.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));

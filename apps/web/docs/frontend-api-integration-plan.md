@@ -67,3 +67,27 @@ Frontend publicService uses:
 ## Pending
 - Public stats endpoint not available
 - AppRouter typing still pending
+
+## Graduate integration status
+- Home: conectado
+- Offers feed autenticado: conectado
+- Offer detail autenticado: conectado
+- Apply to offer: conectado
+- My applications: conectado
+- Profile read: conectado
+- Profile update: conectado parcialmente a campos soportados por `updateMiPerfil`
+- Notifications list: conectado
+- Mark notification as read: conectado
+- Mark all as read: pendiente intencionalmente
+- Mode: works in mock and api
+
+## Graduate integration notes
+- Graduate visual components now receive data by props from route pages.
+- Route pages resolve async data through `graduateService`.
+- API mode uses tRPC with backend mappers.
+- Mock mode keeps the same service interface.
+- Unauthenticated graduate routes show controlled empty/error state with login action.
+
+## Validation
+- `npm --prefix apps/web run lint`: ok
+- `npm --prefix apps/web run build`: ok

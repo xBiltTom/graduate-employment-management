@@ -35,3 +35,14 @@ export function getErrorMessage(error: unknown) {
 
   return "Ocurrió un error inesperado";
 }
+
+export function isAuthError(error: unknown) {
+  const message = getErrorMessage(error).toLowerCase();
+
+  return (
+    message.includes("autentic") ||
+    message.includes("unauthorized") ||
+    message.includes("forbidden") ||
+    message.includes("permiso")
+  );
+}

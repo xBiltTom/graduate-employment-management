@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { mockGraduateApplications } from "@/lib/mock-data";
 import { ROUTES } from "@/lib/routes";
 import { applicationStatuses } from "@/lib/constants";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, Calendar, FileText, CheckCircle2, Clock, MapPin, Search } from "lucide-react";
+import type { GraduateApplication } from "@/types";
 
 const getStatusDetails = (status: string) => {
   switch (status) {
@@ -28,10 +28,16 @@ const getStatusDetails = (status: string) => {
   }
 };
 
-export function GraduateApplicationsPage() {
+type GraduateApplicationsPageProps = {
+  applications: GraduateApplication[];
+};
+
+export function GraduateApplicationsPage({
+  applications,
+}: GraduateApplicationsPageProps) {
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
-  const filteredApplications = mockGraduateApplications.filter((app) => {
+  const filteredApplications = applications.filter((app) => {
     if (filterStatus === "all") return true;
     if (filterStatus === "active") {
       return (app.status as string) !== applicationStatuses.hired && (app.status as string) !== applicationStatuses.rejected;
@@ -62,10 +68,10 @@ export function GraduateApplicationsPage() {
       <Tabs defaultValue="all" value={filterStatus} onValueChange={setFilterStatus} className="w-full">
         <TabsList className="bg-[var(--color-surface)] border border-[var(--color-border-subtle)] h-auto p-1 overflow-x-auto flex w-full justify-start sm:justify-center">
           <TabsTrigger value="all" className="rounded-md px-4 py-2 data-[state=active]:bg-white data-[state=active]:text-[var(--color-brand)] data-[state=active]:shadow-sm">
-            Todas ({mockGraduateApplications.length})
+            Todas ({applications.length})
           </TabsTrigger>
           <TabsTrigger value="active" className="rounded-md px-4 py-2 data-[state=active]:bg-white data-[state=active]:text-[var(--color-brand)] data-[state=active]:shadow-sm">
-            Activas ({mockGraduateApplications.filter(a => (a.status as string) !== applicationStatuses.hired && (a.status as string) !== applicationStatuses.rejected).length})
+            Activas ({applications.filter(a => (a.status as string) !== applicationStatuses.hired && (a.status as string) !== applicationStatuses.rejected).length})
           </TabsTrigger>
           <TabsTrigger value={applicationStatuses.hired} className="rounded-md px-4 py-2 data-[state=active]:bg-white data-[state=active]:text-[var(--color-success)] data-[state=active]:shadow-sm">
             Contrataciones

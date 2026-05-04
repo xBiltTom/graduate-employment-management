@@ -1,6 +1,7 @@
 "use client";
-import { notFound, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { ApplyToJobButton } from "@/components/graduate/apply-to-job-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,16 +13,8 @@ export function GraduateOfferDetailPage({ job }: { job: JobSummary | null }) {
   const router = useRouter();
 
   if (!job) {
-    notFound();
+    return null;
   }
-
-  const handleApply = () => {
-    toast.success("Postulación iniciada", {
-      description: "Esta acción se conectará al backend en una fase posterior.",
-      icon: <CheckCircle2 className="h-5 w-5 text-white" />,
-      className: "bg-[var(--color-success)] text-white border-none",
-    });
-  };
 
   const handleSave = () => {
     toast.info("Oferta guardada", {
@@ -99,9 +92,7 @@ export function GraduateOfferDetailPage({ job }: { job: JobSummary | null }) {
             
             {/* Actions Desktop */}
             <div className="hidden md:flex flex-col gap-3 min-w-[200px]">
-              <Button onClick={handleApply} className="w-full bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white shadow-md text-base h-12">
-                Postular ahora
-              </Button>
+              <ApplyToJobButton jobId={job.id} className="w-full bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white shadow-md text-base h-12" />
               <div className="flex gap-2">
                 <Button onClick={handleSave} variant="outline" className="flex-1 border-[var(--color-border-subtle)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] hover:bg-[var(--color-brand-light)]/30">
                   <BookmarkPlus className="h-4 w-4 mr-2" /> Guardar
@@ -240,9 +231,7 @@ export function GraduateOfferDetailPage({ job }: { job: JobSummary | null }) {
         <Button onClick={handleSave} variant="outline" size="icon" className="h-12 w-12 shrink-0 border-[var(--color-border-subtle)] text-[var(--color-text-muted)]">
           <BookmarkPlus className="h-5 w-5" />
         </Button>
-        <Button onClick={handleApply} className="flex-1 h-12 bg-[var(--color-brand)] text-white font-semibold shadow-md">
-          Postular ahora
-        </Button>
+        <ApplyToJobButton jobId={job.id} className="flex-1 h-12 bg-[var(--color-brand)] text-white font-semibold shadow-md" />
       </div>
     </div>
   );

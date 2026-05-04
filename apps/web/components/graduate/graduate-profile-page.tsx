@@ -2,26 +2,53 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { mockGraduateProfile } from "@/lib/mock-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { getErrorMessage } from "@/lib/errors";
+import { graduateService } from "@/services";
+import type { GraduateProfile } from "@/types";
 
 import { User, Mail, Phone, MapPin, GraduationCap, Briefcase, Plus, FileText, CheckCircle2, Edit2, Download } from "lucide-react";
 
-export function GraduateProfilePage() {
-  const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState(mockGraduateProfile);
+type GraduateProfilePageProps = {
+  initialProfile: GraduateProfile;
+};
 
-  const handleSave = () => {
-    setIsEditing(false);
-    toast.success("Perfil actualizado", {
-      description: "Los cambios se guardarán en el backend en una fase posterior.",
-      icon: <CheckCircle2 className="h-5 w-5 text-white" />,
-      className: "bg-[var(--color-success)] text-white border-none",
-    });
+export function GraduateProfilePage({
+  initialProfile,
+}: GraduateProfilePageProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [savedProfile, setSavedProfile] = useState(initialProfile);
+  const [profile, setProfile] = useState(initialProfile);
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+
+      const updatedProfile = await graduateService.updateProfile({
+        presentacion: profile.presentacion,
+        telefono: profile.telefono,
+        ciudad: profile.ciudad,
+        region: profile.region,
+      });
+
+      setProfile(updatedProfile);
+      setSavedProfile(updatedProfile);
+      setIsEditing(false);
+      toast.success("Perfil actualizado", {
+        description: "Los cambios fueron guardados correctamente.",
+        icon: <CheckCircle2 className="h-5 w-5 text-white" />,
+        className: "bg-[var(--color-success)] text-white border-none",
+      });
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleEditClick = () => {
@@ -29,7 +56,7 @@ export function GraduateProfilePage() {
   };
 
   const handleCancel = () => {
-    setProfile(mockGraduateProfile); // Reset
+    setProfile(savedProfile);
     setIsEditing(false);
   };
 
@@ -50,8 +77,8 @@ export function GraduateProfilePage() {
             <Button variant="outline" onClick={handleCancel} className="flex-1 sm:flex-none border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:text-[var(--color-text-heading)]">
               Cancelar
             </Button>
-            <Button onClick={handleSave} className="flex-1 sm:flex-none bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white shadow-sm">
-              Guardar Cambios
+            <Button onClick={() => void handleSave()} disabled={isSaving} className="flex-1 sm:flex-none bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white shadow-sm">
+              {isSaving ? "Guardando..." : "Guardar Cambios"}
             </Button>
           </div>
         ) : (
@@ -139,11 +166,11 @@ export function GraduateProfilePage() {
             </CardHeader>
             <CardContent className="p-6 sm:p-8">
               <div className="space-y-6">
-                {profile.education.map((edu, idx) => (
+                {(profile.education ?? []).map((edu, idx) => (
                   <div key={idx} className="flex gap-4">
                     <div className="flex flex-col items-center">
                       <div className="h-3 w-3 rounded-full bg-[var(--color-brand)] mt-1.5 shadow-[0_0_0_4px_var(--color-brand-light)]"></div>
-                      {idx !== profile.education.length - 1 && <div className="w-0.5 h-full bg-[var(--color-border-subtle)] my-2"></div>}
+                      {idx !== (profile.education ?? []).length - 1 && <div className="w-0.5 h-full bg-[var(--color-border-subtle)] my-2"></div>}
                     </div>
                     <div className="pb-2 flex-1">
                       {isEditing ? (
@@ -181,11 +208,11 @@ export function GraduateProfilePage() {
             </CardHeader>
             <CardContent className="p-6 sm:p-8">
               <div className="space-y-6">
-                {profile.experience.map((exp, idx) => (
+                {(profile.experience ?? []).map((exp, idx) => (
                   <div key={idx} className="flex gap-4">
                     <div className="flex flex-col items-center">
                       <div className="h-3 w-3 rounded-full bg-[var(--color-teal)] mt-1.5 shadow-[0_0_0_4px_rgba(20,184,166,0.15)]"></div>
-                      {idx !== profile.experience.length - 1 && <div className="w-0.5 h-full bg-[var(--color-border-subtle)] my-2"></div>}
+                      {idx !== (profile.experience ?? []).length - 1 && <div className="w-0.5 h-full bg-[var(--color-border-subtle)] my-2"></div>}
                     </div>
                     <div className="pb-2 flex-1">
                       {isEditing ? (

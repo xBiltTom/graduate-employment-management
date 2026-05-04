@@ -100,3 +100,31 @@
   - detail: oferta con empresa y habilidades
 - Missing/unclear:
   - No existe endpoint de estadísticas públicas
+
+## Graduate module integration
+- Backend procedures used:
+  - `egresados.getMiPerfil`
+  - `egresados.updateMiPerfil`
+  - `ofertas.feed`
+  - `ofertas.getById`
+  - `postulaciones.postular`
+  - `postulaciones.misPostulaciones`
+  - `notificaciones.misNotificaciones`
+  - `notificaciones.marcarLeida`
+- Frontend mapping added for:
+  - perfil egresado
+  - postulaciones
+  - notificaciones
+- Pages connected in API mode:
+  - `/egresado/inicio`
+  - `/egresado/ofertas`
+  - `/egresado/ofertas/[id]`
+  - `/egresado/postulaciones`
+  - `/egresado/perfil`
+  - `/egresado/notificaciones`
+- Controlled unauthenticated handling:
+  - graduate routes show a controlled message with login action instead of forcing a redirect
+- Current limitations kept intentionally:
+  - `marcarTodasLeidas` no se conecta todavía
+  - edición de perfil conectada para los campos soportados por la UI actual y `updateMiPerfil`: `presentacion`, `telefono`, `ciudad`, `region`
+  - no se conecta subida/descarga real de CV

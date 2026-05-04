@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { graduateService } from "@/services";
 import { ROUTES } from "@/lib/routes";
 import { applicationStatuses } from "@/lib/constants";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -7,14 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Briefcase, ChevronRight, Bell, Clock, Building2, MapPin, CheckCircle2, User } from "lucide-react";
-import type { JobSummary } from "@/types";
+import type { GraduateApplication, GraduateProfile, JobSummary, NotificationItem } from "@/types";
 
-export function GraduateHomePage({ featuredJobs }: { featuredJobs: JobSummary[] }) {
-  const mockGraduateProfile = graduateService.getProfile();
-  const mockGraduateApplications = graduateService.getApplications();
-  const mockNotifications = graduateService.getNotifications();
-  const recentApplications = mockGraduateApplications.slice(0, 3);
-  const unreadNotifications = mockNotifications.filter(n => !n.read).length;
+type GraduateHomePageProps = {
+  profile: GraduateProfile;
+  featuredJobs: JobSummary[];
+  applications: GraduateApplication[];
+  notifications: NotificationItem[];
+};
+
+export function GraduateHomePage({
+  profile,
+  featuredJobs,
+  applications,
+  notifications,
+}: GraduateHomePageProps) {
+  const recentApplications = applications.slice(0, 3);
+  const unreadNotifications = notifications.filter((notification) => !notification.read).length;
   
   return (
     <div className="space-y-8 animate-fade-up">
@@ -22,7 +30,7 @@ export function GraduateHomePage({ featuredJobs }: { featuredJobs: JobSummary[] 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div className="space-y-1">
           <h1 className="font-[var(--font-heading)] text-3xl font-bold text-[var(--color-text-heading)]">
-            Hola, {mockGraduateProfile.nombres} 👋
+            Hola, {profile.nombres} 👋
           </h1>
           <p className="text-[var(--color-text-muted)]">
             Aquí tienes un resumen de tu actividad y nuevas oportunidades.
@@ -196,9 +204,9 @@ export function GraduateHomePage({ featuredJobs }: { featuredJobs: JobSummary[] 
                   <h3 className="font-semibold text-[var(--color-text-heading)]">Perfil Profesional</h3>
                   <p className="text-sm text-[var(--color-text-muted)] mt-1">Completa tu información para destacar</p>
                 </div>
-                  <span className="text-2xl font-bold text-[var(--color-brand)]">{mockGraduateProfile.profileCompletion ?? 0}%</span>
+                  <span className="text-2xl font-bold text-[var(--color-brand)]">{profile.profileCompletion ?? 0}%</span>
                 </div>
-                <Progress value={mockGraduateProfile.profileCompletion ?? 0} className="h-2 mb-6" />
+                <Progress value={profile.profileCompletion ?? 0} className="h-2 mb-6" />
               
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
@@ -234,7 +242,7 @@ export function GraduateHomePage({ featuredJobs }: { featuredJobs: JobSummary[] 
                 <div className="mx-auto h-10 w-10 flex items-center justify-center rounded-full bg-[var(--color-brand-light)] text-[var(--color-brand)] mb-2">
                   <Briefcase className="h-5 w-5" />
                 </div>
-                <p className="text-2xl font-bold text-[var(--color-text-heading)]">{mockGraduateApplications.length}</p>
+                <p className="text-2xl font-bold text-[var(--color-text-heading)]">{applications.length}</p>
                 <p className="text-xs text-[var(--color-text-muted)] font-medium uppercase tracking-wider mt-1">Postulaciones</p>
               </CardContent>
             </Card>
@@ -243,7 +251,7 @@ export function GraduateHomePage({ featuredJobs }: { featuredJobs: JobSummary[] 
                 <div className="mx-auto h-10 w-10 flex items-center justify-center rounded-full bg-amber-100 text-amber-600 mb-2">
                   <CheckCircle2 className="h-5 w-5" />
                 </div>
-                <p className="text-2xl font-bold text-[var(--color-text-heading)]">{mockGraduateProfile.skills.length}</p>
+                <p className="text-2xl font-bold text-[var(--color-text-heading)]">{profile.skills.length}</p>
                 <p className="text-xs text-[var(--color-text-muted)] font-medium uppercase tracking-wider mt-1">Habilidades</p>
               </CardContent>
             </Card>

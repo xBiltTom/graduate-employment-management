@@ -4,6 +4,10 @@ import {
   contractTypes,
   offerModalities,
   offerStatuses,
+  reportStatuses,
+  reportTypes,
+  skillTypes,
+  userStatuses,
   userRoles,
 } from "@/lib/constants";
 
@@ -446,5 +450,279 @@ export const mockCompanyApplicants = [
       },
     ],
     archivos: [],
+  },
+];
+
+export const mockAdminStats = {
+  totalGraduates: 1240,
+  activeCompanies: 86,
+  pendingCompanies: 12,
+  activeOffers: 58,
+  monthlyApplications: 342,
+  employabilityRate: 68,
+};
+
+export const mockAdminGraduates = [
+  {
+    id: "graduate-1",
+    nombres: "Ana",
+    apellidos: "Torres",
+    email: "ana.torres@example.com",
+    telefono: "999 999 999",
+    carrera: "Ingeniería de Sistemas",
+    anioEgreso: 2024,
+    ciudad: "Trujillo",
+    region: "La Libertad",
+    estado: userStatuses.active,
+    postulaciones: 4,
+    habilidades: ["React", "TypeScript", "Testing"],
+    presentacion:
+      "Egresada interesada en desarrollo frontend, testing y soluciones digitales. Buscando oportunidades para aplicar mis conocimientos en proyectos desafiantes.",
+    archivos: [
+      {
+        id: "admin-file-1",
+        nombreArchivo: "CV_Ana_Torres_2026.pdf",
+        mimeType: "application/pdf",
+        tamanio: 2400000,
+      },
+    ],
+    historial: [
+      {
+        id: "graduate-history-1",
+        resumen: "Perfil validado por administración",
+        fecha: "2026-05-01",
+      },
+      {
+        id: "graduate-history-2",
+        resumen: "Postulación destacada en Desarrollador Frontend Junior",
+        fecha: "2026-05-03",
+      },
+    ],
+  },
+  {
+    id: "graduate-2",
+    nombres: "Luis",
+    apellidos: "Ramírez",
+    email: "luis.ramirez@example.com",
+    telefono: "987 654 321",
+    carrera: "Ingeniería de Software",
+    anioEgreso: 2023,
+    ciudad: "Lima",
+    region: "Lima",
+    estado: userStatuses.active,
+    postulaciones: 6,
+    habilidades: ["NestJS", "PostgreSQL", "Node.js"],
+    presentacion:
+      "Desarrollador backend con interés en APIs escalables y bases de datos relacionales. Busco un equipo con buenas prácticas y mentoría.",
+    archivos: [
+      {
+        id: "admin-file-2",
+        nombreArchivo: "CV_Luis_Ramirez_2026.pdf",
+        mimeType: "application/pdf",
+        tamanio: 2100000,
+      },
+    ],
+    historial: [
+      {
+        id: "graduate-history-3",
+        resumen: "Perfil actualizado con nueva experiencia laboral",
+        fecha: "2026-04-28",
+      },
+    ],
+  },
+  {
+    id: "graduate-3",
+    nombres: "Carla",
+    apellidos: "Vega",
+    email: "carla.vega@example.com",
+    telefono: "955 222 444",
+    carrera: "Ingeniería de Sistemas",
+    anioEgreso: 2022,
+    ciudad: "Arequipa",
+    region: "Arequipa",
+    estado: userStatuses.pending,
+    postulaciones: 2,
+    habilidades: ["Figma", "UX", "React"],
+    presentacion:
+      "Frontend con enfoque en UX y diseño de interfaces accesibles. Interesada en participar en equipos multidisciplinarios.",
+    archivos: [],
+    historial: [
+      {
+        id: "graduate-history-4",
+        resumen: "Pendiente de completar validación documental",
+        fecha: "2026-05-04",
+      },
+    ],
+  },
+];
+
+export const mockAdminCompanies = [
+  {
+    id: "company-1",
+    nombreComercial: "Tech Solutions Perú",
+    razonSocial: "Tech Solutions Perú S.A.C.",
+    ruc: "20600000001",
+    sector: "Tecnología",
+    email: "rrhh@techsolutions.pe",
+    telefono: "999 888 777",
+    sitioWeb: "https://techsolutions.pe",
+    ciudad: "Trujillo",
+    region: "La Libertad",
+    descripcion:
+      "Empresa enfocada en soluciones digitales, desarrollo de software y transformación tecnológica.",
+    estadoValidacion: companyValidationStatuses.approved,
+    ofertasPublicadas: 4,
+    fechaRegistro: "2026-04-15",
+  },
+  {
+    id: "company-2",
+    nombreComercial: "Innova Digital",
+    razonSocial: "Innova Digital S.A.C.",
+    ruc: "20600000002",
+    sector: "Servicios digitales",
+    email: "contacto@innovadigital.pe",
+    telefono: "987 456 321",
+    sitioWeb: "https://innovadigital.pe",
+    ciudad: "Lima",
+    region: "Lima",
+    descripcion:
+      "Consultora especializada en automatización, analítica y productos digitales para empresas de crecimiento acelerado.",
+    estadoValidacion: companyValidationStatuses.pending,
+    ofertasPublicadas: 1,
+    fechaRegistro: "2026-05-01",
+  },
+  {
+    id: "company-3",
+    nombreComercial: "Grupo Andino Logística",
+    razonSocial: "Grupo Andino Logística S.A.C.",
+    ruc: "20600000003",
+    sector: "Logística",
+    email: "talento@grupoandino.pe",
+    telefono: "965 555 112",
+    sitioWeb: "https://grupoandino.pe",
+    ciudad: "Arequipa",
+    region: "Arequipa",
+    descripcion:
+      "Operador regional con foco en logística, distribución y modernización de procesos operativos.",
+    estadoValidacion: companyValidationStatuses.rejected,
+    ofertasPublicadas: 0,
+    fechaRegistro: "2026-04-27",
+  },
+];
+
+export const mockAdminOffers = [
+  {
+    id: "job-1",
+    titulo: "Desarrollador Frontend Junior",
+    empresa: "Tech Solutions Perú",
+    sector: "Tecnología",
+    ubicacion: "Trujillo, Perú",
+    modalidad: offerModalities.hybrid,
+    tipoContrato: contractTypes.fullTime,
+    estado: offerStatuses.pendingReview,
+    publicadoEn: "2026-05-01",
+    cierreEn: "2026-06-15",
+  },
+  {
+    id: "job-2",
+    titulo: "Analista QA Junior",
+    empresa: "Innova Digital",
+    sector: "Servicios digitales",
+    ubicacion: "Remoto",
+    modalidad: offerModalities.remote,
+    tipoContrato: contractTypes.fullTime,
+    estado: offerStatuses.approved,
+    publicadoEn: "2026-05-03",
+    cierreEn: "2026-06-30",
+  },
+  {
+    id: "job-3",
+    titulo: "Product Designer Ssr / Sr",
+    empresa: "TechVision Global",
+    sector: "Tecnología",
+    ubicacion: "Lima, Perú",
+    modalidad: offerModalities.hybrid,
+    tipoContrato: contractTypes.fullTime,
+    estado: offerStatuses.rejected,
+    publicadoEn: "2026-04-28",
+    cierreEn: "2026-07-01",
+  },
+  {
+    id: "job-4",
+    titulo: "Data Analyst Junior",
+    empresa: "Alpha Analytics",
+    sector: "Analítica",
+    ubicacion: "Remoto",
+    modalidad: offerModalities.remote,
+    tipoContrato: contractTypes.fullTime,
+    estado: offerStatuses.active,
+    publicadoEn: "2026-05-02",
+    cierreEn: "2026-06-20",
+  },
+];
+
+export const mockAdminReports = [
+  {
+    id: "report-1",
+    type: reportTypes.graduatesByCareer,
+    status: reportStatuses.completed,
+    createdAt: "2026-05-01",
+    fileName: "egresados-por-carrera.pdf",
+  },
+  {
+    id: "report-2",
+    type: reportTypes.laborDemand,
+    status: reportStatuses.processing,
+    createdAt: "2026-05-03",
+    fileName: null,
+  },
+  {
+    id: "report-3",
+    type: reportTypes.activeOffers,
+    status: reportStatuses.pending,
+    createdAt: "2026-05-04",
+    fileName: null,
+  },
+  {
+    id: "report-4",
+    type: reportTypes.employability,
+    status: reportStatuses.failed,
+    createdAt: "2026-04-29",
+    fileName: null,
+  },
+];
+
+export const mockAdminSkills = [
+  {
+    id: "skill-1",
+    name: "React",
+    type: skillTypes.technical,
+    usageInGraduates: 320,
+    usageInOffers: 42,
+    category: "Frontend",
+  },
+  {
+    id: "skill-2",
+    name: "Comunicación efectiva",
+    type: skillTypes.soft,
+    usageInGraduates: 280,
+    usageInOffers: 36,
+    category: "Interpersonal",
+  },
+  {
+    id: "skill-3",
+    name: "Node.js",
+    type: skillTypes.technical,
+    usageInGraduates: 190,
+    usageInOffers: 28,
+    category: "Backend",
+  },
+  {
+    id: "skill-4",
+    name: "Trabajo en equipo",
+    type: skillTypes.soft,
+    usageInGraduates: 340,
+    usageInOffers: 44,
+    category: "Colaboración",
   },
 ];

@@ -1,5 +1,5 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
+import { AdminSettingsPage } from "@/components/admin/admin-settings-page";
 
 export default function Page() {
-  return <PagePlaceholder title="admin admin configuracion" />
+  return <AdminSettingsPage />;
 }

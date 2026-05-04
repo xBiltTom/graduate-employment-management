@@ -1,5 +1,5 @@
-import { PagePlaceholder } from '@/components/layout/page-placeholder';
+import { AdminSkillsPage } from "@/components/admin/admin-skills-page";
 
 export default function Page() {
-  return <PagePlaceholder title="admin admin habilidades" />
+  return <AdminSkillsPage />;
 }

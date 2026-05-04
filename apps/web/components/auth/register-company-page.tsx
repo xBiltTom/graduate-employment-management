@@ -2,13 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { ROUTES } from "@/lib/routes";
+import { useAuthActions } from "@/hooks/use-auth-actions";
+import type { RegisterCompanyInput } from "@/types";
 
 const STEPS = [
   { key: "cuenta", label: "Cuenta", description: "Credenciales de acceso" },
@@ -17,27 +21,68 @@ const STEPS = [
   { key: "descripcion", label: "Descripción", description: "Sobre su empresa" },
 ] as const;
 
-export function RegisterCompanyPage() {
-  const [currentStep, setCurrentStep] = useState<number>(0);
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    ruc: "",
-    razonSocial: "",
-    nombreComercial: "",
-    sector: "",
-    telefono: "",
-    sitioWeb: "",
-    ubicacion: "",
-    descripcion: "",
+const companySchema = z
+  .object({
+    email: z.string().email("Ingresa un correo válido"),
+    password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+    confirmPassword: z.string().min(8, "Confirma tu contraseña"),
+    ruc: z.string().min(1, "Ingresa el RUC"),
+    razonSocial: z.string().min(1, "Ingresa la razón social"),
+    nombreComercial: z.string().min(1, "Ingresa el nombre comercial"),
+    sector: z.string().optional(),
+    telefono: z.string().optional(),
+    sitioWeb: z.string().optional(),
+    ubicacion: z.string().optional(),
+    descripcion: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Las contraseñas no coinciden",
   });
 
-  function updateField(field: string, value: string) {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  }
+type CompanyRegisterForm = z.infer<typeof companySchema>;
 
-  function handleNext() {
+export function RegisterCompanyPage() {
+  const { registerCompany } = useAuthActions();
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    trigger,
+    formState: { errors },
+  } = useForm<CompanyRegisterForm>({
+    resolver: zodResolver(companySchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+      ruc: "",
+      razonSocial: "",
+      nombreComercial: "",
+      sector: "",
+      telefono: "",
+      sitioWeb: "",
+      ubicacion: "",
+      descripcion: "",
+    },
+  });
+
+  async function handleNext() {
+    const stepFields: Array<Array<keyof CompanyRegisterForm>> = [
+      ["email", "password", "confirmPassword"],
+      ["ruc", "razonSocial", "nombreComercial"],
+      [],
+      [],
+    ];
+
+    const fields = stepFields[currentStep];
+    const isValid = fields.length ? await trigger(fields) : true;
+
+    if (!isValid) {
+      return;
+    }
+
     if (currentStep < STEPS.length - 1) {
       setCurrentStep((s) => s + 1);
     }
@@ -49,12 +94,22 @@ export function RegisterCompanyPage() {
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    toast.info("Funcionalidad pendiente de conexión con backend.", {
-      description:
-        "El registro de empresa se habilitará en una fase posterior. Su cuenta quedará pendiente de validación administrativa.",
-    });
+  async function onSubmit(values: CompanyRegisterForm) {
+    setIsSubmitting(true);
+
+    const payload: RegisterCompanyInput = {
+      email: values.email,
+      password: values.password,
+      ruc: values.ruc,
+      razonSocial: values.razonSocial,
+      nombreComercial: values.nombreComercial,
+    };
+
+    try {
+      await registerCompany(payload);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -115,7 +170,7 @@ export function RegisterCompanyPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <Card className="border-[var(--color-border-subtle)]">
           <CardContent className="p-6 space-y-4">
             <div className="space-y-1">
@@ -132,83 +187,82 @@ export function RegisterCompanyPage() {
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="reg-comp-email" className="text-sm">Correo electrónico</Label>
+                    <Input
+                      id="reg-comp-email"
+                      type="email"
+                      placeholder="contacto@empresa.com"
+                      {...register("email")}
+                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
+                    />
+                    {errors.email ? <p className="text-xs text-[var(--color-error)]">{errors.email.message}</p> : null}
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="reg-comp-pass" className="text-sm">Contraseña</Label>
                   <Input
-                    id="reg-comp-email"
-                    type="email"
-                    placeholder="contacto@empresa.com"
-                    value={form.email}
-                    onChange={(e) => updateField("email", e.target.value)}
-                    className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="reg-comp-pass" className="text-sm">Contraseña</Label>
-                  <Input
-                    id="reg-comp-pass"
-                    type="password"
-                    placeholder="••••••••"
-                    value={form.password}
-                    onChange={(e) => updateField("password", e.target.value)}
-                    className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
-                  />
-                </div>
-                <div className="space-y-1.5">
+                      id="reg-comp-pass"
+                      type="password"
+                      placeholder="••••••••"
+                      {...register("password")}
+                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
+                    />
+                    {errors.password ? <p className="text-xs text-[var(--color-error)]">{errors.password.message}</p> : null}
+                  </div>
+                  <div className="space-y-1.5">
                   <Label htmlFor="reg-comp-confirm" className="text-sm">Confirmar contraseña</Label>
                   <Input
-                    id="reg-comp-confirm"
-                    type="password"
-                    placeholder="••••••••"
-                    value={form.confirmPassword}
-                    onChange={(e) => updateField("confirmPassword", e.target.value)}
-                    className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
-                  />
+                      id="reg-comp-confirm"
+                      type="password"
+                      placeholder="••••••••"
+                      {...register("confirmPassword")}
+                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
+                    />
+                    {errors.confirmPassword ? <p className="text-xs text-[var(--color-error)]">{errors.confirmPassword.message}</p> : null}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Step: Datos Fiscales */}
             {currentStep === 1 && (
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="reg-comp-ruc" className="text-sm">RUC</Label>
-                  <Input
-                    id="reg-comp-ruc"
-                    placeholder="20123456789"
-                    value={form.ruc}
-                    onChange={(e) => updateField("ruc", e.target.value)}
-                    className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="reg-comp-razon" className="text-sm">Razón social</Label>
-                  <Input
-                    id="reg-comp-razon"
-                    placeholder="Tech Solutions S.A.C."
-                    value={form.razonSocial}
-                    onChange={(e) => updateField("razonSocial", e.target.value)}
-                    className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="reg-comp-nombre" className="text-sm">Nombre comercial</Label>
                     <Input
-                      id="reg-comp-nombre"
-                      placeholder="Tech Solutions"
-                      value={form.nombreComercial}
-                      onChange={(e) => updateField("nombreComercial", e.target.value)}
+                      id="reg-comp-ruc"
+                      placeholder="20123456789"
+                      {...register("ruc")}
                       className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
                     />
+                    {errors.ruc ? <p className="text-xs text-[var(--color-error)]">{errors.ruc.message}</p> : null}
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="reg-comp-sector" className="text-sm">Sector</Label>
+                  <Label htmlFor="reg-comp-razon" className="text-sm">Razón social</Label>
                     <Input
-                      id="reg-comp-sector"
-                      placeholder="Tecnología"
-                      value={form.sector}
-                      onChange={(e) => updateField("sector", e.target.value)}
+                      id="reg-comp-razon"
+                      placeholder="Tech Solutions S.A.C."
+                      {...register("razonSocial")}
                       className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
                     />
+                    {errors.razonSocial ? <p className="text-xs text-[var(--color-error)]">{errors.razonSocial.message}</p> : null}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="reg-comp-nombre" className="text-sm">Nombre comercial</Label>
+                      <Input
+                        id="reg-comp-nombre"
+                        placeholder="Tech Solutions"
+                        {...register("nombreComercial")}
+                        className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
+                      />
+                      {errors.nombreComercial ? <p className="text-xs text-[var(--color-error)]">{errors.nombreComercial.message}</p> : null}
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="reg-comp-sector" className="text-sm">Sector</Label>
+                      <Input
+                        id="reg-comp-sector"
+                        placeholder="Tecnología"
+                        {...register("sector")}
+                        className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
+                      />
                   </div>
                 </div>
               </div>
@@ -220,34 +274,31 @@ export function RegisterCompanyPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="reg-comp-tel" className="text-sm">Teléfono</Label>
-                    <Input
-                      id="reg-comp-tel"
-                      placeholder="044-123456"
-                      value={form.telefono}
-                      onChange={(e) => updateField("telefono", e.target.value)}
-                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
-                    />
+                      <Input
+                        id="reg-comp-tel"
+                        placeholder="044-123456"
+                        {...register("telefono")}
+                        className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
+                      />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="reg-comp-web" className="text-sm">Sitio web</Label>
-                    <Input
-                      id="reg-comp-web"
-                      placeholder="https://empresa.com"
-                      value={form.sitioWeb}
-                      onChange={(e) => updateField("sitioWeb", e.target.value)}
-                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
-                    />
+                      <Input
+                        id="reg-comp-web"
+                        placeholder="https://empresa.com"
+                        {...register("sitioWeb")}
+                        className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
+                      />
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="reg-comp-ubic" className="text-sm">Ubicación</Label>
-                  <Input
-                    id="reg-comp-ubic"
-                    placeholder="Trujillo, La Libertad"
-                    value={form.ubicacion}
-                    onChange={(e) => updateField("ubicacion", e.target.value)}
-                    className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
-                  />
+                    <Input
+                      id="reg-comp-ubic"
+                      placeholder="Trujillo, La Libertad"
+                      {...register("ubicacion")}
+                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
+                    />
                 </div>
               </div>
             )}
@@ -257,14 +308,13 @@ export function RegisterCompanyPage() {
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="reg-comp-desc" className="text-sm">Descripción de la empresa</Label>
-                  <Textarea
-                    id="reg-comp-desc"
-                    placeholder="Cuéntenos sobre su empresa, su misión y qué tipo de talento busca..."
-                    value={form.descripcion}
-                    onChange={(e) => updateField("descripcion", e.target.value)}
-                    rows={4}
-                    className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)] resize-none"
-                  />
+                    <Textarea
+                      id="reg-comp-desc"
+                      placeholder="Cuéntenos sobre su empresa, su misión y qué tipo de talento busca..."
+                      {...register("descripcion")}
+                      rows={4}
+                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)] resize-none"
+                    />
                 </div>
               </div>
             )}
@@ -287,7 +337,7 @@ export function RegisterCompanyPage() {
               {currentStep < STEPS.length - 1 ? (
                 <Button
                   type="button"
-                  onClick={handleNext}
+                  onClick={() => void handleNext()}
                   className="bg-[var(--color-teal)] hover:bg-[var(--color-teal)]/90 text-white"
                 >
                   Siguiente →
@@ -295,9 +345,10 @@ export function RegisterCompanyPage() {
               ) : (
                 <Button
                   type="submit"
+                  disabled={isSubmitting}
                   className="bg-[var(--color-teal)] hover:bg-[var(--color-teal)]/90 text-white"
                 >
-                  Registrar empresa
+                  {isSubmitting ? "Registrando empresa..." : "Registrar empresa"}
                 </Button>
               )}
             </div>

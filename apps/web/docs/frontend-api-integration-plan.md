@@ -34,3 +34,14 @@
 - Shared export strategy for `AppRouter`
 - Final production URLs
 - Exact rollout order after auth
+
+## Auth integration status
+- Login: conectado
+- Register graduate: conectado
+- Register company: conectado
+- Logout: conectado
+- Current session: conectado
+
+## Notes
+- Cookies HTTP-only handled by browser.
+- No tokens stored in localStorage/sessionStorage.

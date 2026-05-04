@@ -2,12 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { ROUTES } from "@/lib/routes";
+import { useAuthActions } from "@/hooks/use-auth-actions";
+import type { RegisterGraduateInput } from "@/types";
 
 const STEPS = [
   { key: "cuenta", label: "Cuenta", description: "Tus credenciales de acceso" },
@@ -16,26 +20,66 @@ const STEPS = [
   { key: "habilidades", label: "Habilidades", description: "Tus áreas de expertise" },
 ] as const;
 
-export function RegisterGraduatePage() {
-  const [currentStep, setCurrentStep] = useState<number>(0);
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    nombres: "",
-    apellidos: "",
-    dni: "",
-    telefono: "",
-    carrera: "",
-    anioEgreso: "",
-    habilidades: "",
+const graduateSchema = z
+  .object({
+    email: z.string().email("Ingresa un correo válido"),
+    password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+    confirmPassword: z.string().min(8, "Confirma tu contraseña"),
+    nombres: z.string().min(1, "Ingresa tus nombres"),
+    apellidos: z.string().min(1, "Ingresa tus apellidos"),
+    dni: z.string().min(1, "Ingresa tu DNI"),
+    telefono: z.string().optional(),
+    carrera: z.string().optional(),
+    anioEgreso: z.string().optional(),
+    habilidades: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Las contraseñas no coinciden",
   });
 
-  function updateField(field: string, value: string) {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  }
+type GraduateRegisterForm = z.infer<typeof graduateSchema>;
 
-  function handleNext() {
+export function RegisterGraduatePage() {
+  const { registerGraduate } = useAuthActions();
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    trigger,
+    formState: { errors },
+  } = useForm<GraduateRegisterForm>({
+    resolver: zodResolver(graduateSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+      nombres: "",
+      apellidos: "",
+      dni: "",
+      telefono: "",
+      carrera: "",
+      anioEgreso: "",
+      habilidades: "",
+    },
+  });
+
+  async function handleNext() {
+    const stepFields: Array<Array<keyof GraduateRegisterForm>> = [
+      ["email", "password", "confirmPassword"],
+      ["nombres", "apellidos", "dni"],
+      [],
+      [],
+    ];
+
+    const fields = stepFields[currentStep];
+    const isValid = fields.length ? await trigger(fields) : true;
+
+    if (!isValid) {
+      return;
+    }
+
     if (currentStep < STEPS.length - 1) {
       setCurrentStep((s) => s + 1);
     }
@@ -47,11 +91,22 @@ export function RegisterGraduatePage() {
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    toast.info("Funcionalidad pendiente de conexión con backend.", {
-      description: "El registro de egresado se habilitará en una fase posterior.",
-    });
+  async function onSubmit(values: GraduateRegisterForm) {
+    setIsSubmitting(true);
+
+    const payload: RegisterGraduateInput = {
+      email: values.email,
+      password: values.password,
+      nombres: values.nombres,
+      apellidos: values.apellidos,
+      dni: values.dni,
+    };
+
+    try {
+      await registerGraduate(payload);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -89,7 +144,7 @@ export function RegisterGraduatePage() {
         ))}
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <Card className="border-[var(--color-border-subtle)]">
           <CardContent className="p-6 space-y-4">
             <div className="space-y-1">
@@ -106,42 +161,42 @@ export function RegisterGraduatePage() {
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="reg-grad-email" className="text-sm">Correo electrónico</Label>
+                    <Input
+                      id="reg-grad-email"
+                      type="email"
+                      placeholder="tu@correo.com"
+                      {...register("email")}
+                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
+                    />
+                    {errors.email ? <p className="text-xs text-[var(--color-error)]">{errors.email.message}</p> : null}
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="reg-grad-pass" className="text-sm">Contraseña</Label>
                   <Input
-                    id="reg-grad-email"
-                    type="email"
-                    placeholder="tu@correo.com"
-                    value={form.email}
-                    onChange={(e) => updateField("email", e.target.value)}
-                    className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="reg-grad-pass" className="text-sm">Contraseña</Label>
-                  <Input
-                    id="reg-grad-pass"
-                    type="password"
-                    placeholder="••••••••"
-                    value={form.password}
-                    onChange={(e) => updateField("password", e.target.value)}
-                    className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
-                  />
-                  <p className="text-[10px] text-[var(--color-text-muted)]">
-                    Debe contener al menos 8 caracteres, una mayúscula y un número.
-                  </p>
+                      id="reg-grad-pass"
+                      type="password"
+                      placeholder="••••••••"
+                      {...register("password")}
+                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
+                    />
+                    {errors.password ? <p className="text-xs text-[var(--color-error)]">{errors.password.message}</p> : null}
+                    <p className="text-[10px] text-[var(--color-text-muted)]">
+                      Debe contener al menos 8 caracteres, una mayúscula y un número.
+                    </p>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="reg-grad-confirm" className="text-sm">Confirmar contraseña</Label>
                   <Input
-                    id="reg-grad-confirm"
-                    type="password"
-                    placeholder="••••••••"
-                    value={form.confirmPassword}
-                    onChange={(e) => updateField("confirmPassword", e.target.value)}
-                    className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
-                  />
+                      id="reg-grad-confirm"
+                      type="password"
+                      placeholder="••••••••"
+                      {...register("confirmPassword")}
+                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
+                    />
+                    {errors.confirmPassword ? <p className="text-xs text-[var(--color-error)]">{errors.confirmPassword.message}</p> : null}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Step: Datos Personales */}
             {currentStep === 1 && (
@@ -152,20 +207,20 @@ export function RegisterGraduatePage() {
                     <Input
                       id="reg-grad-nombres"
                       placeholder="Ana María"
-                      value={form.nombres}
-                      onChange={(e) => updateField("nombres", e.target.value)}
+                      {...register("nombres")}
                       className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
                     />
+                    {errors.nombres ? <p className="text-xs text-[var(--color-error)]">{errors.nombres.message}</p> : null}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="reg-grad-apellidos" className="text-sm">Apellidos</Label>
                     <Input
                       id="reg-grad-apellidos"
                       placeholder="Torres García"
-                      value={form.apellidos}
-                      onChange={(e) => updateField("apellidos", e.target.value)}
+                      {...register("apellidos")}
                       className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
                     />
+                    {errors.apellidos ? <p className="text-xs text-[var(--color-error)]">{errors.apellidos.message}</p> : null}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -174,18 +229,17 @@ export function RegisterGraduatePage() {
                     <Input
                       id="reg-grad-dni"
                       placeholder="12345678"
-                      value={form.dni}
-                      onChange={(e) => updateField("dni", e.target.value)}
+                      {...register("dni")}
                       className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
                     />
+                    {errors.dni ? <p className="text-xs text-[var(--color-error)]">{errors.dni.message}</p> : null}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="reg-grad-tel" className="text-sm">Teléfono</Label>
                     <Input
                       id="reg-grad-tel"
                       placeholder="987654321"
-                      value={form.telefono}
-                      onChange={(e) => updateField("telefono", e.target.value)}
+                      {...register("telefono")}
                       className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
                     />
                   </div>
@@ -198,23 +252,21 @@ export function RegisterGraduatePage() {
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="reg-grad-carrera" className="text-sm">Carrera</Label>
-                  <Input
-                    id="reg-grad-carrera"
-                    placeholder="Ingeniería de Sistemas"
-                    value={form.carrera}
-                    onChange={(e) => updateField("carrera", e.target.value)}
-                    className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
-                  />
+                    <Input
+                      id="reg-grad-carrera"
+                      placeholder="Ingeniería de Sistemas"
+                      {...register("carrera")}
+                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
+                    />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="reg-grad-anio" className="text-sm">Año de egreso</Label>
-                  <Input
-                    id="reg-grad-anio"
-                    placeholder="2024"
-                    value={form.anioEgreso}
-                    onChange={(e) => updateField("anioEgreso", e.target.value)}
-                    className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
-                  />
+                    <Input
+                      id="reg-grad-anio"
+                      placeholder="2024"
+                      {...register("anioEgreso")}
+                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
+                    />
                 </div>
               </div>
             )}
@@ -224,13 +276,12 @@ export function RegisterGraduatePage() {
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="reg-grad-skills" className="text-sm">Habilidades</Label>
-                  <Input
-                    id="reg-grad-skills"
-                    placeholder="React, TypeScript, Node.js..."
-                    value={form.habilidades}
-                    onChange={(e) => updateField("habilidades", e.target.value)}
-                    className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
-                  />
+                    <Input
+                      id="reg-grad-skills"
+                      placeholder="React, TypeScript, Node.js..."
+                      {...register("habilidades")}
+                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
+                    />
                   <p className="text-[10px] text-[var(--color-text-muted)]">
                     Separa las habilidades con comas.
                   </p>
@@ -256,7 +307,7 @@ export function RegisterGraduatePage() {
               {currentStep < STEPS.length - 1 ? (
                 <Button
                   type="button"
-                  onClick={handleNext}
+                  onClick={() => void handleNext()}
                   className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white"
                 >
                   Siguiente →
@@ -264,9 +315,10 @@ export function RegisterGraduatePage() {
               ) : (
                 <Button
                   type="submit"
+                  disabled={isSubmitting}
                   className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white"
                 >
-                  Crear cuenta
+                  {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
                 </Button>
               )}
             </div>

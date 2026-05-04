@@ -1,29 +1,45 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 import { ROUTES } from "@/lib/routes";
+import { useAuthActions } from "@/hooks/use-auth-actions";
+import type { LoginInput } from "@/types";
+
+const loginSchema = z.object({
+  email: z.string().email("Ingresa un correo válido"),
+  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+});
 
 export function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { login } = useAuthActions();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function onSubmit(values: LoginInput) {
+    setIsSubmitting(true);
 
-    if (!email || !password) {
-      toast.error("Por favor completa todos los campos.");
-      return;
+    try {
+      await login(values);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    toast.info("Funcionalidad pendiente de conexión con backend.", {
-      description: "El inicio de sesión se habilitará en una fase posterior.",
-    });
   }
 
   return (
@@ -37,7 +53,7 @@ export function LoginPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <Label
             htmlFor="login-email"
@@ -49,10 +65,10 @@ export function LoginPage() {
             id="login-email"
             type="email"
             placeholder="tu@correo.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            {...register("email")}
             className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
           />
+          {errors.email ? <p className="text-xs text-[var(--color-error)]">{errors.email.message}</p> : null}
         </div>
 
         <div className="space-y-2">
@@ -71,17 +87,18 @@ export function LoginPage() {
             id="login-password"
             type="password"
             placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            {...register("password")}
             className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
           />
+          {errors.password ? <p className="text-xs text-[var(--color-error)]">{errors.password.message}</p> : null}
         </div>
 
         <Button
           type="submit"
+          disabled={isSubmitting}
           className="w-full bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white"
         >
-          Iniciar Sesión
+          {isSubmitting ? "Ingresando..." : "Iniciar Sesión"}
         </Button>
       </form>
 

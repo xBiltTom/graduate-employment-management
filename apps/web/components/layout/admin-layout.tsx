@@ -10,6 +10,7 @@ import {
   Sparkles,
   UserCog,
 } from "lucide-react";
+import { LogoutButton } from "@/components/auth/logout-button";
 import { ROUTES } from "@/lib/routes";
 
 const mainItems = [
@@ -84,6 +85,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               <p className="text-sm font-medium text-[var(--color-text-heading)]">Administrador</p>
               <p className="text-xs text-[var(--color-text-muted)]">Control global del sistema</p>
             </div>
+            <LogoutButton variant="ghost" size="sm" showLabel={false} className="text-[var(--color-text-muted)] hover:text-[var(--color-brand)]" />
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-brand-light)] text-[var(--color-brand)]">
               <UserCog className="h-4 w-4" />
             </div>

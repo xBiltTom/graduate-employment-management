@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Bell, Briefcase, Building2, LayoutDashboard, Plus, Users } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { LogoutButton } from "@/components/auth/logout-button";
 import { ROUTES } from "@/lib/routes";
 
 const navigationItems = [
@@ -70,6 +71,7 @@ export function CompanyLayout({ children }: { children: React.ReactNode }) {
                 <Users className="h-4 w-4" />
               </AvatarFallback>
             </Avatar>
+            <LogoutButton variant="ghost" size="sm" showLabel={false} className="text-[var(--color-text-muted)] hover:text-[var(--color-brand)] hover:bg-[var(--color-brand-light)]/60" />
           </div>
         </div>
       </header>

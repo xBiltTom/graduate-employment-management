@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ROUTES } from '@/lib/routes';
 import { Button } from '@/components/ui/button';
 import { Bell, User, Search, Briefcase } from 'lucide-react';
+import { LogoutButton } from '@/components/auth/logout-button';
 
 export function GraduateLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -63,6 +64,7 @@ export function GraduateLayout({ children }: { children: React.ReactNode }) {
                   <User className="h-5 w-5" />
                 </Button>
               </Link>
+              <LogoutButton variant="ghost" size="icon" showLabel={false} className="text-[var(--color-text-muted)] hover:text-[var(--color-brand)] hover:bg-[var(--color-brand-light)]/50" />
             </div>
           </div>
         </div>

@@ -20,6 +20,31 @@
 - REST auth disponible en `/api/v1/auth/*`
 - tRPC resuelve usuario desde contexto usando cookies del request
 
+## Auth endpoints confirmed
+- Login: `POST /api/v1/auth/login`
+- Register graduate: `POST /api/v1/auth/register` con `rol=EGRESADO`
+- Register company: `POST /api/v1/auth/register` con `rol=EMPRESA`
+- Logout: `POST /api/v1/auth/logout`
+- Current session: `GET /api/v1/auth/me`
+- tRPC current session alternative: `auth.me`
+
+## Auth request/response observed
+- Login body:
+  - `email`
+  - `password`
+- Register body:
+  - `email`
+  - `password`
+  - `rol`
+  - egresado: `nombres`, `apellidos`, `dni`
+  - empresa: `nombreComercial`, `razonSocial`, `ruc`
+- Auth response body:
+  - `user: { id, email, rol }`
+  - `tokens` solo en desarrollo backend no productivo
+- `me` retorna directamente `{ id, email, rol }`
+- Login/register setean cookies HTTP-only
+- Logout limpia cookies
+
 ## Available modules
 - Auth: REST + `auth.me` por tRPC
 - Offers: tRPC (`feed`, `getById`, `misOfertas`, `create`, `update`, `cerrar`, `adminList`, `adminModerar`)
@@ -54,3 +79,10 @@
 - Preparar cliente tRPC como camino principal para módulos autenticados
 - Preparar cliente HTTP base para auth, uploads y descargas
 - Mantener adaptadores `mock` y `api` por módulo para reemplazo progresivo
+
+## Auth integration status
+- Login: conectado
+- Register graduate: conectado
+- Register company: conectado
+- Logout: conectado
+- Current session: conectado

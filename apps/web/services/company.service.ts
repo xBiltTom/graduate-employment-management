@@ -1,19 +1,5 @@
-import { mockCompanyApplicants, mockCompanyOffers, mockCompanyProfile } from "@/lib/mocks";
+import { companyApiService } from "@/services/api/company.api-service";
+import { shouldUseMockData } from "@/services/data-source";
+import { companyMockService } from "@/services/mock/company.mock-service";
 
-export const companyService = {
-  getProfile() {
-    return mockCompanyProfile;
-  },
-  getOffers() {
-    return mockCompanyOffers;
-  },
-  getOfferById(id: string) {
-    return mockCompanyOffers.find((offer) => offer.id === id) ?? null;
-  },
-  getApplicantsByOfferId(offerId: string) {
-    return mockCompanyApplicants.filter((applicant) => applicant.offerId === offerId);
-  },
-  getApplicantById(id: string) {
-    return mockCompanyApplicants.find((applicant) => applicant.id === id) ?? null;
-  },
-};
+export const companyService = shouldUseMockData() ? companyMockService : companyApiService;

@@ -1,31 +1,5 @@
-import { mockAdminCompanies, mockAdminGraduates, mockAdminOffers, mockAdminReports, mockAdminSkills, mockAdminStats } from "@/lib/mocks";
+import { adminApiService } from "@/services/api/admin.api-service";
+import { shouldUseMockData } from "@/services/data-source";
+import { adminMockService } from "@/services/mock/admin.mock-service";
 
-export const adminService = {
-  getStats() {
-    return mockAdminStats;
-  },
-  getGraduates() {
-    return mockAdminGraduates;
-  },
-  getGraduateById(id: string) {
-    return mockAdminGraduates.find((graduate) => graduate.id === id) ?? null;
-  },
-  getCompanies() {
-    return mockAdminCompanies;
-  },
-  getCompanyById(id: string) {
-    return mockAdminCompanies.find((company) => company.id === id) ?? null;
-  },
-  getOffers() {
-    return mockAdminOffers;
-  },
-  getOfferById(id: string) {
-    return mockAdminOffers.find((offer) => offer.id === id) ?? null;
-  },
-  getReports() {
-    return mockAdminReports;
-  },
-  getSkills() {
-    return mockAdminSkills;
-  },
-};
+export const adminService = shouldUseMockData() ? adminMockService : adminApiService;

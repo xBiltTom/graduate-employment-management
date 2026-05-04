@@ -1,7 +1,5 @@
-import { mockUsers } from "@/lib/mocks";
+import { authApiService } from "@/services/api/auth.api-service";
+import { shouldUseMockData } from "@/services/data-source";
+import { authMockService } from "@/services/mock/auth.mock-service";
 
-export const authService = {
-  getMockUsers() {
-    return mockUsers;
-  },
-};
+export const authService = shouldUseMockData() ? authMockService : authApiService;

@@ -7,3 +7,4 @@ export * from "./application";
 export * from "./notification";
 export * from "./report";
 export * from "./admin";
+export * from "./service";

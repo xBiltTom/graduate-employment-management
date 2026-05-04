@@ -1,16 +1,5 @@
-import { mockGraduateApplications, mockGraduateProfile, mockNotifications } from "@/lib/mocks";
+import { graduateApiService } from "@/services/api/graduate.api-service";
+import { shouldUseMockData } from "@/services/data-source";
+import { graduateMockService } from "@/services/mock/graduate.mock-service";
 
-export const graduateService = {
-  getProfile() {
-    return mockGraduateProfile;
-  },
-  getApplications() {
-    return mockGraduateApplications;
-  },
-  getApplicationByJobId(jobId: string) {
-    return mockGraduateApplications.find((application) => application.jobId === jobId) ?? null;
-  },
-  getNotifications() {
-    return mockNotifications;
-  },
-};
+export const graduateService = shouldUseMockData() ? graduateMockService : graduateApiService;

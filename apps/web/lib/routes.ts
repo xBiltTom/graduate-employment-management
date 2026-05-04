@@ -41,3 +41,45 @@ export const adminRoutes = {
   skills: "/admin/habilidades",
   settings: "/admin/configuracion",
 };
+
+export const ROUTES = {
+  PUBLIC: {
+    HOME: publicRoutes.home,
+    OFERTAS: publicRoutes.offers,
+    OFERTA_DETAIL: publicRoutes.offerDetail,
+  },
+  AUTH: {
+    LOGIN: authRoutes.login,
+    REGISTER: authRoutes.register,
+    REGISTER_GRADUATE: authRoutes.registerGraduate,
+    REGISTER_COMPANY: authRoutes.registerCompany,
+  },
+  EGRESADO: {
+    INICIO: graduateRoutes.home,
+    OFERTAS: graduateRoutes.offers,
+    OFERTA_DETAIL: graduateRoutes.offerDetail,
+    POSTULACIONES: graduateRoutes.applications,
+    PERFIL: graduateRoutes.profile,
+    NOTIFICACIONES: graduateRoutes.notifications,
+  },
+  EMPRESA: {
+    INICIO: companyRoutes.home,
+    OFERTAS: companyRoutes.offers,
+    NUEVA_OFERTA: companyRoutes.newOffer,
+    OFERTA_DETAIL: companyRoutes.offerDetail,
+    OFERTA_POSTULANTES: companyRoutes.offerApplicants,
+    POSTULANTE_DETAIL: companyRoutes.applicantDetail,
+    PERFIL: companyRoutes.profile,
+  },
+  ADMIN: {
+    DASHBOARD: adminRoutes.dashboard,
+    EGRESADOS: adminRoutes.graduates,
+    EGRESADO_DETAIL: adminRoutes.graduateDetail,
+    EMPRESAS: adminRoutes.companies,
+    EMPRESA_DETAIL: adminRoutes.companyDetail,
+    OFERTAS: adminRoutes.offers,
+    REPORTES: adminRoutes.reports,
+    HABILIDADES: adminRoutes.skills,
+    CONFIGURACION: adminRoutes.settings,
+  }
+};

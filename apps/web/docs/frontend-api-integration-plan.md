@@ -134,6 +134,22 @@ Frontend publicService uses:
 - Dashboard KPIs are derived from existing list/count procedures instead of a dedicated aggregate endpoint.
 - Reports UI keeps visual selectors, but only `POSTULACIONES_POR_OFERTA` requests an explicit backend parameter in the current UI.
 
+## Reports integration
+- Backend tRPC:
+  - `reportes.misReportes`
+  - `reportes.solicitar`
+  - `reportes.getById`
+  - `reportes.reintentar`
+- Backend REST:
+  - `GET /api/v1/reportes/:id/download`
+- Frontend:
+  - list/request/retry/getById via tRPC
+  - final download via REST `downloadUrl`
+- Limitations:
+  - Download only when `estado = COMPLETADO` and `downloadUrl` exists.
+  - Report file must exist in backend storage.
+  - Browser must send HTTP-only auth cookie to backend download endpoint.
+
 ## Limitations
 - No real logo upload yet.
 - No real CV download yet.

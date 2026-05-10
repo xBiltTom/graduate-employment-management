@@ -9,6 +9,7 @@ export type ReportSummary = {
   status: ReportStatus;
   createdAt: string;
   fileName: string | null;
+  parameters?: Record<string, unknown> | null;
   downloadUrl?: string | null;
   errorMessage?: string | null;
 };

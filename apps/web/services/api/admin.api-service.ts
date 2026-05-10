@@ -79,7 +79,10 @@ function buildDownloadUrl(path?: string | null) {
     return path;
   }
 
-  return `${env.apiBaseUrl}${path}`;
+  const normalizedBaseUrl = env.apiBaseUrl.replace(/\/$/, "");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
+  return `${normalizedBaseUrl}${normalizedPath}`;
 }
 
 async function getApplicationsTotal(filters: Record<string, unknown>) {
@@ -380,7 +383,6 @@ export const adminApiService = {
     const response = await untypedTrpcClient.mutation("reportes.solicitar", {
       tipo: input.type,
       parametros: input.parameters,
-      asincrono: true,
     });
 
     const mapped = mapBackendAdminReport(response as BackendAdminReport);

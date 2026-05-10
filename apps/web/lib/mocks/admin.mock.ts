@@ -191,10 +191,10 @@ export const mockAdminOffers: AdminOffer[] = [
 ];
 
 export const mockAdminReports: ReportSummary[] = [
-  { id: "report-1", type: reportTypes.graduatesByCareer, status: reportStatuses.completed, createdAt: "2026-05-01", fileName: "egresados-por-carrera.pdf" },
-  { id: "report-2", type: reportTypes.laborDemand, status: reportStatuses.processing, createdAt: "2026-05-03", fileName: null },
-  { id: "report-3", type: reportTypes.activeOffers, status: reportStatuses.pending, createdAt: "2026-05-04", fileName: null },
-  { id: "report-4", type: reportTypes.employability, status: reportStatuses.failed, createdAt: "2026-04-29", fileName: null },
+  { id: "report-1", type: reportTypes.graduatesByCareer, status: reportStatuses.completed, createdAt: "2026-05-01", fileName: "egresados-por-carrera.pdf", downloadUrl: "data:text/plain;charset=utf-8,Reporte%20simulado" },
+  { id: "report-2", type: reportTypes.laborDemand, status: reportStatuses.processing, createdAt: "2026-05-03", fileName: null, downloadUrl: null },
+  { id: "report-3", type: reportTypes.activeOffers, status: reportStatuses.pending, createdAt: "2026-05-04", fileName: null, downloadUrl: null },
+  { id: "report-4", type: reportTypes.employability, status: reportStatuses.failed, createdAt: "2026-04-29", fileName: null, downloadUrl: null, errorMessage: "Fallo simulado de generacion" },
 ];
 
 export const mockAdminSkills: AdminSkill[] = [

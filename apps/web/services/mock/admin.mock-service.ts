@@ -130,10 +130,11 @@ export const adminMockService = {
     const report = {
       id: `report-${Date.now()}`,
       type: input.type,
-      status: reportStatuses.completed,
+      status: reportStatuses.pending,
       createdAt: new Date().toISOString(),
-      fileName: `${input.type.toLowerCase()}.pdf`,
-      downloadUrl: "data:text/plain;charset=utf-8,Reporte%20simulado",
+      fileName: null,
+      parameters: input.parameters ?? null,
+      downloadUrl: null,
       errorMessage: null,
     };
 
@@ -147,9 +148,10 @@ export const adminMockService = {
       throw new Error("Reporte no encontrado");
     }
 
-    report.status = reportStatuses.completed;
+    report.status = reportStatuses.processing;
+    report.fileName = null;
     report.errorMessage = null;
-    report.downloadUrl = "data:text/plain;charset=utf-8,Reporte%20simulado";
+    report.downloadUrl = null;
     return report;
   },
   async downloadReport(id: string) {
@@ -159,7 +161,11 @@ export const adminMockService = {
       throw new Error("Reporte no encontrado");
     }
 
-    return report.downloadUrl ?? "data:text/plain;charset=utf-8,Reporte%20simulado";
+    if (report.status !== reportStatuses.completed || !report.downloadUrl) {
+      throw new Error("El reporte todavía no está disponible para descarga.");
+    }
+
+    return report.downloadUrl;
   },
   async getSkills() {
     return mockAdminSkills;

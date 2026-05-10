@@ -62,6 +62,18 @@ export function AdminReportsPage({ reports }: { reports: AdminReport[] }) {
     }
   };
 
+  const renderReportAction = (report: AdminReport) => {
+    if (report.status === reportStatuses.failed) {
+      return <Button variant="outline" size="sm" onClick={() => void handleRetry(report.id)}>Reintentar</Button>;
+    }
+
+    if (report.status === reportStatuses.completed && report.downloadUrl) {
+      return <Button variant="outline" size="sm" onClick={() => void handleDownload(report.id)}>Descargar</Button>;
+    }
+
+    return null;
+  };
+
   const handleRetry = async (reportId: string) => {
     try {
       await adminService.retryReport(reportId);
@@ -141,14 +153,10 @@ export function AdminReportsPage({ reports }: { reports: AdminReport[] }) {
                 <p className="font-medium text-[var(--color-text-heading)]">{reportTypeLabel[report.type]}</p>
                 <p className="mt-1 text-sm text-[var(--color-text-muted)]">{report.createdAt} {report.fileName ? `· ${report.fileName}` : "· sin archivo aún"}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <AdminStatusBadge status={report.status} />
-                {report.status === reportStatuses.failed ? (
-                  <Button variant="outline" size="sm" onClick={() => void handleRetry(report.id)}>Reintentar</Button>
-                ) : (
-                  <Button variant="outline" size="sm" onClick={() => void handleDownload(report.id)} disabled={!report.downloadUrl}>Descargar</Button>
-                )}
-              </div>
+                <div className="flex items-center gap-2">
+                  <AdminStatusBadge status={report.status} />
+                  {renderReportAction(report)}
+                </div>
             </div>
           ))}
         </div>

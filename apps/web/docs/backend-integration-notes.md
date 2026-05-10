@@ -230,3 +230,19 @@
 - “Solicitar corrección” en empresas/ofertas sigue siendo solo visual porque no existe procedimiento backend claro para esa acción.
 - La UI de reportes solo envía parámetros reales para `POSTULACIONES_POR_OFERTA`; el resto usa parámetros vacíos o filtros visuales no conectados todavía.
 - La descarga real se habilita solo cuando backend devuelve `downloadUrl`; si el reporte no está completado, se mantiene el estado controlado.
+
+## Reports integration
+- Backend tRPC:
+  - `reportes.misReportes`
+  - `reportes.solicitar`
+  - `reportes.getById`
+  - `reportes.reintentar`
+- Backend REST:
+  - `GET /api/v1/reportes/:id/download`
+- Frontend:
+  - listado, solicitud, reintento y consulta por id via tRPC
+  - descarga final via REST usando `downloadUrl`
+- Limitations:
+  - Download only when `estado = COMPLETADO` and `downloadUrl` exists.
+  - Report file must exist in backend storage.
+  - Browser must send HTTP-only auth cookie to backend download endpoint.

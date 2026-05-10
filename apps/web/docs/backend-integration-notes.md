@@ -246,3 +246,16 @@
   - Download only when `estado = COMPLETADO` and `downloadUrl` exists.
   - Report file must exist in backend storage.
   - Browser must send HTTP-only auth cookie to backend download endpoint.
+
+## Route protection and session
+- Route protection is handled server-side in Next layouts.
+- The frontend calls `GET /api/v1/auth/me` forwarding HTTP-only cookies.
+- No tokens are stored in `localStorage` or `sessionStorage`.
+- In mock mode, guards are bypassed to keep visual development available.
+- In api mode, role-based redirects are enforced.
+- Protected groups:
+  - `/egresado` -> `EGRESADO`
+  - `/empresa` -> `EMPRESA`
+  - `/admin` -> `ADMINISTRADOR`
+- Auth group:
+  - `/login` and `/registro` redirect authenticated users to their default role route.

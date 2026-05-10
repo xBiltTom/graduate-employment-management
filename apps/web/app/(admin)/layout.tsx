@@ -1,5 +1,9 @@
-import { AdminLayout } from '@/components/layout/admin-layout';
+import { AdminLayout } from "@/components/layout/admin-layout";
+import { requireRole } from "@/lib/auth/guards.server";
+import { userRoles } from "@/lib/constants";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default async function Layout({ children }: { children: React.ReactNode }) {
+  await requireRole([userRoles.admin]);
+
   return <AdminLayout>{children}</AdminLayout>;
 }

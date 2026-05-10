@@ -1,25 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { CreateSkillAction, SkillActions } from "@/components/admin/skill-actions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { mockAdminSkills } from "@/lib/mock-data";
 import { skillTypes } from "@/lib/constants";
+import type { AdminSkill } from "@/types";
 
-export function AdminSkillsPage() {
+export function AdminSkillsPage({ skills: initialSkills }: { skills: AdminSkill[] }) {
   const [search, setSearch] = useState("");
   const [type, setType] = useState("all");
 
   const skills = useMemo(() => {
-    return mockAdminSkills.filter((skill) => {
+    return initialSkills.filter((skill) => {
       const matchesSearch = skill.name.toLowerCase().includes(search.toLowerCase());
       const matchesType = type === "all" || skill.type === type;
       return matchesSearch && matchesType;
     });
-  }, [search, type]);
+  }, [initialSkills, search, type]);
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -28,7 +27,7 @@ export function AdminSkillsPage() {
           <h1 className="font-[var(--font-heading)] text-3xl font-bold text-[var(--color-text-heading)]">Gestión de habilidades</h1>
           <p className="mt-2 text-[var(--color-text-muted)]">Administra el catálogo maestro de competencias técnicas y blandas usadas por el sistema.</p>
         </div>
-        <Button className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" onClick={() => toast.info("La creación real de habilidades llegará en otra fase.")}>Nueva habilidad</Button>
+        <CreateSkillAction />
       </div>
 
       <Card className="border-[var(--color-border-subtle)] shadow-sm">
@@ -63,10 +62,7 @@ export function AdminSkillsPage() {
                   <p className="mt-1 font-semibold text-[var(--color-text-heading)]">{skill.usageInOffers}</p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" onClick={() => toast.info("Edición visual temporal.")}>Editar</Button>
-                <Button variant="outline" onClick={() => toast.info("Desactivación temporal sin backend.")}>Desactivar</Button>
-              </div>
+              <SkillActions skill={skill} />
             </CardContent>
           </Card>
         ))}

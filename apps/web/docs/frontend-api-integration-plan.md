@@ -110,11 +110,37 @@ Frontend publicService uses:
 - Mock mode keeps the same service interface, including profile update, offer creation/closure and application status changes.
 - Unauthenticated company routes show controlled empty/error state with login action.
 
+## Admin integration status
+- Dashboard: conectado
+- Graduates list: conectado
+- Graduate detail: conectado
+- Companies list: conectado
+- Company detail: conectado
+- Company validation: conectado
+- Offers moderation list: conectado
+- Offer moderation actions: conectado
+- Skills list: conectado
+- Skills create/update/delete: conectado
+- Reports history: conectado
+- Report request/retry/download: conectado parcialmente según disponibilidad del backend
+- Settings page access control: conectado
+- Mode: works in mock and api
+
+## Admin integration notes
+- Admin visual components now receive data by props from route pages.
+- Route pages resolve async data through `adminService` and show `AdminStatusNotice` on controlled auth/error states.
+- API mode uses tRPC plus REST download for reports, with admin-specific mappers for graduates, companies, offers, skills and reports.
+- Mock mode keeps the same async service interface, including validation, moderation, skills CRUD and report actions.
+- Dashboard KPIs are derived from existing list/count procedures instead of a dedicated aggregate endpoint.
+- Reports UI keeps visual selectors, but only `POSTULACIONES_POR_OFERTA` requests an explicit backend parameter in the current UI.
+
 ## Limitations
 - No real logo upload yet.
 - No real CV download yet.
 - Offer creation does not send unsupported UI fields such as `vacantes` or `direccion`.
 - Skills still require `habilidadIds`; text skills are not connected until catalog selection is implemented.
+- Admin correction-request actions remain visual only because there is no confirmed backend contract.
+- Graduate admin detail still uses fallback arrays for archivos/historial administrativo because that contract is not exposed in current backend responses.
 
 ## Validation
 - `npm --prefix apps/web run lint`: ok

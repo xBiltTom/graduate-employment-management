@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import { AdminGraduateDetailPage } from "@/components/admin/admin-graduate-detail-page";
-import { adminService, companyService } from "@/services";
+import { AdminStatusNotice } from "@/components/admin/admin-status-notice";
+import { getErrorMessage, isAuthError } from "@/lib/errors";
+import { adminService } from "@/services";
+import type { AdminApplicationSummary } from "@/types";
 
 export default async function Page({
   params,
@@ -8,26 +11,30 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const graduate = adminService.getGraduateById(id);
+  let graduate = null;
+  let applications: AdminApplicationSummary[] = [];
+  let errorMessage: string | undefined;
+  let showLoginAction = false;
 
-  if (!graduate) {
-    notFound();
+  try {
+    [graduate, applications] = await Promise.all([
+      adminService.getGraduateById(id),
+      adminService.getApplications({ graduateId: id }),
+    ]);
+  } catch (error) {
+    showLoginAction = isAuthError(error);
+    errorMessage = showLoginAction
+      ? "Debes iniciar sesión como administrador para ver esta sección."
+      : getErrorMessage(error);
   }
 
-  const applications = (await companyService
-    .getApplicantsByOfferId("job-1"))
-    .filter((application) => application.graduateId === id)
-    .map((application) => {
-      const offer = adminService.getOfferById(application.offerId);
+  if (!graduate) {
+    if (errorMessage) {
+      return <AdminStatusNotice message={errorMessage} showLoginAction={showLoginAction} />;
+    }
 
-      return {
-        id: application.applicationId,
-        title: offer?.titulo ?? "Oferta",
-        company: offer?.empresa ?? "Empresa",
-        status: application.status,
-        appliedAt: application.appliedAt,
-      };
-    });
+    notFound();
+  }
 
   return <AdminGraduateDetailPage graduate={graduate} applications={applications} />;
 }

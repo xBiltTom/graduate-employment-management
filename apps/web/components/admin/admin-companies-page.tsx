@@ -4,19 +4,20 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
+import { ValidateCompanyAction } from "@/components/admin/validate-company-action";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockAdminCompanies } from "@/lib/mock-data";
 import { companyValidationStatuses } from "@/lib/constants";
 import { ROUTES } from "@/lib/routes";
+import type { AdminCompany } from "@/types";
 
-export function AdminCompaniesPage() {
+export function AdminCompaniesPage({ companies: initialCompanies }: { companies: AdminCompany[] }) {
   const [status, setStatus] = useState("all");
 
   const companies = useMemo(() => {
-    return mockAdminCompanies.filter((company) => status === "all" || company.estadoValidacion === status);
-  }, [status]);
+    return initialCompanies.filter((company) => status === "all" || company.estadoValidacion === status);
+  }, [initialCompanies, status]);
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -52,8 +53,8 @@ export function AdminCompaniesPage() {
                     <Button variant="outline">Ver detalle</Button>
                   </Link>
                   <Button variant="outline" onClick={() => toast.info("Solicitud de corrección marcada solo visualmente.")}>Solicitar corrección</Button>
-                  <Button variant="outline" onClick={() => toast.info("Rechazo temporal, sin persistencia.")}>Rechazar</Button>
-                  <Button className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" onClick={() => toast.success("Aprobación simulada localmente.")}>Aprobar</Button>
+                  <ValidateCompanyAction companyId={company.id} decision={companyValidationStatuses.rejected} label="Rechazar" variant="outline" disabled={company.estadoValidacion !== companyValidationStatuses.pending} />
+                  <ValidateCompanyAction companyId={company.id} decision={companyValidationStatuses.approved} label="Aprobar" className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" disabled={company.estadoValidacion !== companyValidationStatuses.pending} />
                 </div>
               </div>
             </CardContent>

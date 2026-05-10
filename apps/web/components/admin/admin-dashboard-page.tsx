@@ -3,21 +3,30 @@ import { ArrowRight, BarChart3, Briefcase, Building2, CheckCircle2, GraduationCa
 import { AdminKpiCard } from "@/components/admin/admin-kpi-card";
 import { AdminSectionCard } from "@/components/admin/admin-section-card";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
+import { ValidateCompanyAction } from "@/components/admin/validate-company-action";
 import { Button } from "@/components/ui/button";
 import { companyValidationStatuses, offerStatuses } from "@/lib/constants";
 import { ROUTES } from "@/lib/routes";
-import { adminService } from "@/services";
+import type { AdminCompany, AdminOffer, AdminSkill, AdminStats } from "@/types";
 
 const growthSeries = [42, 58, 66, 71, 84, 92];
 
-export function AdminDashboardPage() {
-  const mockAdminStats = adminService.getStats();
-  const mockAdminCompanies = adminService.getCompanies();
-  const mockAdminOffers = adminService.getOffers();
-  const mockAdminSkills = adminService.getSkills();
-  const pendingCompanies = mockAdminCompanies.filter((company) => company.estadoValidacion === companyValidationStatuses.pending);
-  const pendingOffers = mockAdminOffers.filter((offer) => offer.estado === offerStatuses.pendingReview);
-  const topSkills = mockAdminSkills.slice(0, 4);
+export function AdminDashboardPage({
+  stats,
+  companies,
+  offers,
+  skills,
+}: {
+  stats: AdminStats;
+  companies: AdminCompany[];
+  offers: AdminOffer[];
+  skills: AdminSkill[];
+}) {
+  const pendingCompanies = companies.filter(
+    (company) => company.estadoValidacion === companyValidationStatuses.pending,
+  );
+  const pendingOffers = offers.filter((offer) => offer.estado === offerStatuses.pendingReview);
+  const topSkills = skills.slice(0, 4);
 
   return (
     <div className="space-y-8 animate-fade-up">
@@ -42,12 +51,12 @@ export function AdminDashboardPage() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <AdminKpiCard title="Egresados registrados" value={String(mockAdminStats.totalGraduates)} description="+12% este mes" icon={<GraduationCap className="h-5 w-5" />} />
-        <AdminKpiCard title="Empresas activas" value={String(mockAdminStats.activeCompanies)} description="Ecosistema validado" icon={<Building2 className="h-5 w-5" />} />
-        <AdminKpiCard title="Empresas pendientes" value={String(mockAdminStats.pendingCompanies)} description="Requieren revisión" icon={<Users className="h-5 w-5" />} />
-        <AdminKpiCard title="Ofertas activas" value={String(mockAdminStats.activeOffers)} description="Publicaciones vigentes" icon={<Briefcase className="h-5 w-5" />} />
-        <AdminKpiCard title="Postulaciones del mes" value={String(mockAdminStats.monthlyApplications)} description="Actividad reciente" icon={<BarChart3 className="h-5 w-5" />} />
-        <AdminKpiCard title="Empleabilidad" value={`${mockAdminStats.employabilityRate}%`} description="Indicador institucional" icon={<CheckCircle2 className="h-5 w-5" />} />
+        <AdminKpiCard title="Egresados registrados" value={String(stats.totalGraduates)} description="+12% este mes" icon={<GraduationCap className="h-5 w-5" />} />
+        <AdminKpiCard title="Empresas activas" value={String(stats.activeCompanies)} description="Ecosistema validado" icon={<Building2 className="h-5 w-5" />} />
+        <AdminKpiCard title="Empresas pendientes" value={String(stats.pendingCompanies)} description="Requieren revisión" icon={<Users className="h-5 w-5" />} />
+        <AdminKpiCard title="Ofertas activas" value={String(stats.activeOffers)} description="Publicaciones vigentes" icon={<Briefcase className="h-5 w-5" />} />
+        <AdminKpiCard title="Postulaciones del mes" value={String(stats.monthlyApplications)} description="Actividad reciente" icon={<BarChart3 className="h-5 w-5" />} />
+        <AdminKpiCard title="Empleabilidad" value={`${stats.employabilityRate}%`} description="Indicador institucional" icon={<CheckCircle2 className="h-5 w-5" />} />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
@@ -99,7 +108,12 @@ export function AdminDashboardPage() {
                     <Button variant="outline">Ver detalle</Button>
                   </Link>
                   <Button variant="outline">Solicitar corrección</Button>
-                  <Button className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white">Aprobar</Button>
+                  <ValidateCompanyAction
+                    companyId={company.id}
+                    decision={companyValidationStatuses.approved}
+                    label="Aprobar"
+                    className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white"
+                  />
                 </div>
               </div>
             ))}

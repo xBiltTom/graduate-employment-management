@@ -9,17 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { mockAdminGraduates } from "@/lib/mock-data";
 import { ROUTES } from "@/lib/routes";
+import type { AdminGraduate } from "@/types";
 
-export function AdminGraduatesPage() {
+export function AdminGraduatesPage({ graduates: initialGraduates }: { graduates: AdminGraduate[] }) {
   const [search, setSearch] = useState("");
   const [career, setCareer] = useState("all");
   const [year, setYear] = useState("all");
   const [status, setStatus] = useState("all");
 
   const graduates = useMemo(() => {
-    return mockAdminGraduates.filter((graduate) => {
+    return initialGraduates.filter((graduate) => {
       const fullName = `${graduate.nombres} ${graduate.apellidos}`.toLowerCase();
       const matchesSearch = fullName.includes(search.toLowerCase());
       const matchesCareer = career === "all" || graduate.carrera === career;
@@ -28,7 +28,7 @@ export function AdminGraduatesPage() {
 
       return matchesSearch && matchesCareer && matchesYear && matchesStatus;
     });
-  }, [career, search, status, year]);
+  }, [career, initialGraduates, search, status, year]);
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -47,21 +47,21 @@ export function AdminGraduatesPage() {
             <SelectTrigger><SelectValue placeholder="Carrera" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas las carreras</SelectItem>
-              {[...new Set(mockAdminGraduates.map((item) => item.carrera))].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
+              {[...new Set(initialGraduates.map((item) => item.carrera))].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={year} onValueChange={(value) => setYear(value ?? "all")}>
             <SelectTrigger><SelectValue placeholder="Año" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Cualquier año</SelectItem>
-              {[...new Set(mockAdminGraduates.map((item) => String(item.anioEgreso)))].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
+              {[...new Set(initialGraduates.map((item) => String(item.anioEgreso)))].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={status} onValueChange={(value) => setStatus(value ?? "all")}>
             <SelectTrigger><SelectValue placeholder="Estado" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos los estados</SelectItem>
-              {[...new Set(mockAdminGraduates.map((item) => item.estado))].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
+              {[...new Set(initialGraduates.map((item) => item.estado))].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
             </SelectContent>
           </Select>
         </CardContent>

@@ -179,3 +179,54 @@
   - edición visual de oferta sigue pendiente aunque `ofertas.update` ya quedó disponible en el servicio.
   - creación de oferta no envía `vacantes`, `direccion` ni habilidades en texto porque el schema backend no los soporta.
   - descarga real de CV y carga real de logo siguen fuera de alcance.
+
+## Admin module integration
+
+### Procedures/endpoints connected
+- Empresas admin:
+  - `empresas.listar`
+  - `empresas.getById`
+  - `empresas.validar`
+- Egresados admin:
+  - `egresados.buscar`
+  - `egresados.getById`
+- Ofertas admin:
+  - `ofertas.adminList`
+  - `ofertas.getById`
+  - `ofertas.adminModerar`
+- Postulaciones admin:
+  - `postulaciones.adminList`
+- Habilidades admin:
+  - `habilidades.list`
+  - `habilidades.create`
+  - `habilidades.update`
+  - `habilidades.delete`
+- Reportes admin:
+  - `reportes.misReportes`
+  - `reportes.solicitar`
+  - `reportes.getById`
+  - `reportes.reintentar`
+  - `GET /api/v1/reportes/:id/download`
+
+### Admin integration status
+- Páginas conectadas en modo API:
+  - `/admin/dashboard`
+  - `/admin/egresados`
+  - `/admin/egresados/[id]`
+  - `/admin/empresas`
+  - `/admin/empresas/[id]`
+  - `/admin/ofertas`
+  - `/admin/habilidades`
+  - `/admin/reportes`
+  - `/admin/configuracion`
+- Manejo controlado sin autenticación:
+  - las rutas admin muestran `AdminStatusNotice` con acción a login en lugar de redirección forzada.
+- Mock mode preservado:
+  - `adminMockService` ahora replica la interfaz async del servicio API, incluyendo validación de empresas, moderación de ofertas, CRUD de habilidades y flujo básico de reportes.
+
+### Limitaciones intencionales actuales
+- El dashboard calcula KPIs desde listados y conteos existentes; no usa endpoint agregado dedicado.
+- El detalle de egresado muestra postulaciones desde `postulaciones.adminList`; historial administrativo y archivos siguen como fallback visual.
+- “Solicitar corrección” en empresas/ofertas sigue siendo solo visual porque no existe procedimiento backend claro para esa acción.
+- La UI de reportes solo envía parámetros reales para `POSTULACIONES_POR_OFERTA`; el resto usa parámetros vacíos o filtros visuales no conectados todavía.
+- La descarga real se habilita solo cuando backend devuelve `downloadUrl`; si el reporte no está completado, se mantiene el estado controlado.

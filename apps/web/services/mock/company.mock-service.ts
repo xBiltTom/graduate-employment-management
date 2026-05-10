@@ -1,4 +1,4 @@
-import { applicationStatuses, companyValidationStatuses, offerStatuses } from "@/lib/constants";
+import { companyValidationStatuses, offerStatuses } from "@/lib/constants";
 import { mockCompanyApplicants, mockCompanyOffers, mockCompanyProfile } from "@/lib/mocks";
 import type {
   CompanyApplicantStatusChangeInput,

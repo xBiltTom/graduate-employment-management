@@ -1,6 +1,8 @@
 import { skillTypes, userStatuses } from "@/lib/constants";
 import type { CompanyValidationStatus } from "@/types/company";
+import type { ApplicationStatus } from "@/types/application";
 import type { OfferModality, OfferStatus, ContractType } from "@/types/job";
+import type { ReportSummary, ReportStatus, ReportType } from "@/types/report";
 
 export type AdminStats = {
   totalGraduates: number;
@@ -22,6 +24,55 @@ export type AdminTimelineItem = {
   id: string;
   resumen: string;
   fecha: string;
+};
+
+export type AdminApplicationSummary = {
+  id: string;
+  offerId?: string;
+  title: string;
+  company: string;
+  status: ApplicationStatus;
+  appliedAt: string;
+};
+
+export type AdminCompanyValidationInput = {
+  companyId: string;
+  decision: "APROBADA" | "RECHAZADA";
+  reason?: string;
+};
+
+export type AdminOfferModerationInput = {
+  id: string;
+  decision: "APROBAR" | "RECHAZAR";
+  reason?: string;
+};
+
+export type AdminSkillCreateInput = {
+  name: string;
+  type: (typeof skillTypes)[keyof typeof skillTypes];
+  category?: string;
+};
+
+export type AdminSkillUpdateInput = {
+  id: string;
+  name?: string;
+  type?: (typeof skillTypes)[keyof typeof skillTypes];
+  category?: string;
+};
+
+export type AdminApplicationsFilters = {
+  graduateId?: string;
+  companyId?: string;
+  offerId?: string;
+  status?: ApplicationStatus;
+  from?: string;
+  to?: string;
+};
+
+export type AdminReportRequestInput = {
+  type: ReportType;
+  parameters?: Record<string, unknown>;
+  status?: ReportStatus;
 };
 
 export type AdminGraduate = {
@@ -57,6 +108,8 @@ export type AdminCompany = {
   estadoValidacion: CompanyValidationStatus;
   ofertasPublicadas: number;
   fechaRegistro: string;
+  motivoRechazo?: string;
+  validadoEn?: string;
 };
 
 export type AdminOffer = {
@@ -70,6 +123,7 @@ export type AdminOffer = {
   estado: OfferStatus;
   publicadoEn: string;
   cierreEn: string;
+  applicationsCount?: number;
 };
 
 export type AdminSkill = {
@@ -77,6 +131,9 @@ export type AdminSkill = {
   name: string;
   type: (typeof skillTypes)[keyof typeof skillTypes];
   category?: string;
+  isActive?: boolean;
   usageInGraduates: number;
   usageInOffers: number;
 };
+
+export type AdminReport = ReportSummary;

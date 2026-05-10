@@ -3,7 +3,9 @@
 import { toast } from "sonner";
 import { AdminSectionCard } from "@/components/admin/admin-section-card";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
+import { ValidateCompanyAction } from "@/components/admin/validate-company-action";
 import { Button } from "@/components/ui/button";
+import { companyValidationStatuses } from "@/lib/constants";
 import type { AdminCompany } from "@/types";
 
 export function AdminCompanyDetailPage({
@@ -23,8 +25,8 @@ export function AdminCompanyDetailPage({
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => toast.info("Corrección solicitada solo en UI.")}>Solicitar corrección</Button>
-          <Button variant="outline" onClick={() => toast.info("Rechazo temporal sin backend.")}>Rechazar</Button>
-          <Button className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" onClick={() => toast.success("Aprobación simulada.")}>Aprobar empresa</Button>
+          <ValidateCompanyAction companyId={company.id} decision={companyValidationStatuses.rejected} label="Rechazar" variant="outline" disabled={company.estadoValidacion !== companyValidationStatuses.pending} />
+          <ValidateCompanyAction companyId={company.id} decision={companyValidationStatuses.approved} label="Aprobar empresa" className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" disabled={company.estadoValidacion !== companyValidationStatuses.pending} />
         </div>
       </div>
 

@@ -2,18 +2,20 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { ModerateOfferAction } from "@/components/admin/moderate-offer-action";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { mockAdminOffers } from "@/lib/mock-data";
+import { offerStatuses } from "@/lib/constants";
+import type { AdminOffer } from "@/types";
 
-export function AdminOffersPage() {
+export function AdminOffersPage({ offers: initialOffers }: { offers: AdminOffer[] }) {
   const [status, setStatus] = useState("all");
 
   const offers = useMemo(() => {
-    return mockAdminOffers.filter((offer) => status === "all" || offer.estado === status);
-  }, [status]);
+    return initialOffers.filter((offer) => status === "all" || offer.estado === status);
+  }, [initialOffers, status]);
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -28,7 +30,7 @@ export function AdminOffersPage() {
             <SelectTrigger className="w-[240px]"><SelectValue placeholder="Estado" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos los estados</SelectItem>
-              {[...new Set(mockAdminOffers.map((offer) => offer.estado))].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
+              {[...new Set(initialOffers.map((offer) => offer.estado))].map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
             </SelectContent>
           </Select>
         </CardContent>
@@ -47,8 +49,8 @@ export function AdminOffersPage() {
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" onClick={() => toast.info("Vista detallada de oferta pendiente para integración futura.")}>Ver</Button>
                 <Button variant="outline" onClick={() => toast.info("Solicitud de cambios temporal.")}>Solicitar cambios</Button>
-                <Button variant="outline" onClick={() => toast.info("Rechazo temporal sin backend.")}>Rechazar</Button>
-                <Button className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" onClick={() => toast.success("Oferta aprobada solo localmente.")}>Aprobar</Button>
+                <ModerateOfferAction offerId={offer.id} decision="RECHAZAR" label="Rechazar" variant="outline" disabled={offer.estado !== offerStatuses.pendingReview && offer.estado !== offerStatuses.rejected} />
+                <ModerateOfferAction offerId={offer.id} decision="APROBAR" label="Aprobar" className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" disabled={offer.estado !== offerStatuses.pendingReview && offer.estado !== offerStatuses.rejected} />
               </div>
             </CardContent>
           </Card>

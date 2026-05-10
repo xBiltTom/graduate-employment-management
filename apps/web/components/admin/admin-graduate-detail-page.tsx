@@ -5,14 +5,14 @@ import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { AdminSectionCard } from "@/components/admin/admin-section-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { AdminGraduate } from "@/types";
+import type { AdminApplicationSummary, AdminGraduate } from "@/types";
 
 export function AdminGraduateDetailPage({
   graduate,
   applications,
 }: {
   graduate: AdminGraduate;
-  applications: { id: string; title: string; company: string; status: string; appliedAt: string }[];
+  applications: AdminApplicationSummary[];
 }) {
   return (
     <div className="space-y-6 animate-fade-up">

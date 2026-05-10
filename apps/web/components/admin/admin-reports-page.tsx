@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AdminSectionCard } from "@/components/admin/admin-section-card";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { mockAdminReports } from "@/lib/mock-data";
-import { reportTypes } from "@/lib/constants";
+import { reportStatuses, reportTypes } from "@/lib/constants";
+import { getErrorMessage } from "@/lib/errors";
+import { adminService } from "@/services";
+import type { AdminReport } from "@/types";
 
 const reportTypeLabel: Record<string, string> = {
   [reportTypes.graduatesByCareer]: "Egresados por carrera",
@@ -19,10 +22,55 @@ const reportTypeLabel: Record<string, string> = {
   [reportTypes.cohortComparison]: "Comparativo de cohortes",
 };
 
-const reportOptions = Object.values(reportTypes);
+const reportOptions = Object.values(reportTypes) as AdminReport["type"][];
 
-export function AdminReportsPage() {
-  const [reportType, setReportType] = useState(reportTypes.employability);
+export function AdminReportsPage({ reports }: { reports: AdminReport[] }) {
+  const router = useRouter();
+  const [reportType, setReportType] = useState<AdminReport["type"]>(reportTypes.employability);
+
+  const handleGenerate = async () => {
+    try {
+      const parameters =
+        reportType === reportTypes.applicationsByOffer
+          ? {
+              ofertaId: window.prompt("Ingresa el ID de la oferta para el reporte")?.trim(),
+            }
+          : undefined;
+
+      if (reportType === reportTypes.applicationsByOffer && !parameters?.ofertaId) {
+        toast.info("Debes indicar una oferta para ese reporte.");
+        return;
+      }
+
+      await adminService.requestReport({
+        type: reportType,
+        parameters,
+      });
+      toast.success("Reporte solicitado correctamente.");
+      router.refresh();
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const handleDownload = async (reportId: string) => {
+    try {
+      const url = await adminService.downloadReport(reportId);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const handleRetry = async (reportId: string) => {
+    try {
+      await adminService.retryReport(reportId);
+      toast.success("Reporte reenviado correctamente.");
+      router.refresh();
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -34,7 +82,7 @@ export function AdminReportsPage() {
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <AdminSectionCard title="Configurar reporte" description="Selecciona tipo, filtros visuales y nivel de detalle.">
           <div className="grid gap-4 md:grid-cols-2">
-            <Select value={reportType} onValueChange={(value) => setReportType(value ?? reportTypes.employability)}>
+            <Select value={reportType} onValueChange={(value) => setReportType((value as AdminReport["type"] | undefined) ?? reportTypes.employability)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {reportOptions.map((option) => <SelectItem key={option} value={option}>{reportTypeLabel[option]}</SelectItem>)}
@@ -73,7 +121,7 @@ export function AdminReportsPage() {
 
           <div className="mt-6 flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => toast.info("La previsualización real será generada en una fase posterior.")}>Previsualizar</Button>
-            <Button className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" onClick={() => toast.success("Generación de reporte simulada.")}>Generar reporte</Button>
+            <Button className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" onClick={() => void handleGenerate()}>Generar reporte</Button>
           </div>
         </AdminSectionCard>
 
@@ -87,7 +135,7 @@ export function AdminReportsPage() {
 
       <AdminSectionCard title="Historial de reportes" description="Ejecuciones recientes y estado actual.">
         <div className="space-y-3">
-          {mockAdminReports.map((report) => (
+          {reports.map((report) => (
             <div key={report.id} className="flex flex-col gap-3 rounded-2xl border border-[var(--color-border-subtle)] p-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="font-medium text-[var(--color-text-heading)]">{reportTypeLabel[report.type]}</p>
@@ -95,7 +143,11 @@ export function AdminReportsPage() {
               </div>
               <div className="flex items-center gap-2">
                 <AdminStatusBadge status={report.status} />
-                <Button variant="outline" size="sm" onClick={() => toast.info("La descarga real no está habilitada en esta fase.")}>Descargar</Button>
+                {report.status === reportStatuses.failed ? (
+                  <Button variant="outline" size="sm" onClick={() => void handleRetry(report.id)}>Reintentar</Button>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={() => void handleDownload(report.id)} disabled={!report.downloadUrl}>Descargar</Button>
+                )}
               </div>
             </div>
           ))}

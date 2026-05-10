@@ -7,17 +7,47 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { mockCompanyProfile } from "@/lib/mock-data";
+import { getErrorMessage } from "@/lib/errors";
+import { companyService } from "@/services";
+import type { CompanyProfile, CompanyValidationState } from "@/types";
 
-export function CompanyProfilePage() {
+type CompanyProfilePageProps = {
+  initialProfile: CompanyProfile;
+  validationState?: CompanyValidationState;
+};
+
+export function CompanyProfilePage({
+  initialProfile,
+  validationState,
+}: CompanyProfilePageProps) {
   const [editing, setEditing] = useState(false);
-  const [profile, setProfile] = useState(mockCompanyProfile);
+  const [saving, setSaving] = useState(false);
+  const [savedProfile, setSavedProfile] = useState(initialProfile);
+  const [profile, setProfile] = useState(initialProfile);
 
-  const save = () => {
-    setEditing(false);
-    toast.success("Cambios listos para sincronizar", {
-      description: "El guardado real se conectará al backend en una fase posterior.",
-    });
+  const save = async () => {
+    try {
+      setSaving(true);
+
+      const updatedProfile = await companyService.updateProfile({
+        nombreComercial: profile.nombreComercial,
+        descripcion: profile.descripcion,
+        sitioWeb: profile.sitioWeb,
+        ciudad: profile.ciudad,
+        region: profile.region,
+      });
+
+      setProfile(updatedProfile);
+      setSavedProfile(updatedProfile);
+      setEditing(false);
+      toast.success("Perfil actualizado", {
+        description: "Se guardaron los campos compatibles con la integración actual.",
+      });
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -30,8 +60,8 @@ export function CompanyProfilePage() {
         </div>
         {editing ? (
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => { setProfile(mockCompanyProfile); setEditing(false); }}>Cancelar</Button>
-            <Button className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" onClick={save}>Guardar cambios</Button>
+            <Button variant="outline" onClick={() => { setProfile(savedProfile); setEditing(false); }}>Cancelar</Button>
+            <Button className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" onClick={() => void save()} disabled={saving}>{saving ? "Guardando..." : "Guardar cambios"}</Button>
           </div>
         ) : (
           <Button className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" onClick={() => setEditing(true)}>Editar perfil</Button>
@@ -58,26 +88,26 @@ export function CompanyProfilePage() {
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-[var(--color-text-heading)]">Sector</p>
-                {editing ? <Input value={profile.sector} onChange={(event) => setProfile({ ...profile, sector: event.target.value })} /> : <p className="text-[var(--color-text-body)]">{profile.sector}</p>}
+                <p className="text-[var(--color-text-body)]">{profile.sector}</p>
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-[var(--color-text-heading)]">Sitio web</p>
-                {editing ? <Input value={profile.sitioWeb} onChange={(event) => setProfile({ ...profile, sitioWeb: event.target.value })} /> : <p className="text-[var(--color-text-body)]">{profile.sitioWeb}</p>}
+                {editing ? <Input value={profile.sitioWeb ?? ""} onChange={(event) => setProfile({ ...profile, sitioWeb: event.target.value })} /> : <p className="text-[var(--color-text-body)]">{profile.sitioWeb}</p>}
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-[var(--color-text-heading)]">Ciudad</p>
-                {editing ? <Input value={profile.ciudad} onChange={(event) => setProfile({ ...profile, ciudad: event.target.value })} /> : <p className="text-[var(--color-text-body)]">{profile.ciudad}</p>}
+                {editing ? <Input value={profile.ciudad ?? ""} onChange={(event) => setProfile({ ...profile, ciudad: event.target.value })} /> : <p className="text-[var(--color-text-body)]">{profile.ciudad}</p>}
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-[var(--color-text-heading)]">Región</p>
-                {editing ? <Input value={profile.region} onChange={(event) => setProfile({ ...profile, region: event.target.value })} /> : <p className="text-[var(--color-text-body)]">{profile.region}</p>}
+                {editing ? <Input value={profile.region ?? ""} onChange={(event) => setProfile({ ...profile, region: event.target.value })} /> : <p className="text-[var(--color-text-body)]">{profile.region}</p>}
               </div>
             </div>
 
             <div className="space-y-2">
               <p className="text-sm font-semibold text-[var(--color-text-heading)]">Descripción</p>
               {editing ? (
-                <Textarea value={profile.descripcion} onChange={(event) => setProfile({ ...profile, descripcion: event.target.value })} className="min-h-32" />
+                <Textarea value={profile.descripcion ?? ""} onChange={(event) => setProfile({ ...profile, descripcion: event.target.value })} className="min-h-32" />
               ) : (
                 <p className="leading-7 text-[var(--color-text-body)]">{profile.descripcion}</p>
               )}
@@ -91,11 +121,11 @@ export function CompanyProfilePage() {
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm font-semibold text-[var(--color-text-heading)]">Email</p>
-                {editing ? <Input value={profile.email} onChange={(event) => setProfile({ ...profile, email: event.target.value })} className="mt-2" /> : <p className="mt-2 text-[var(--color-text-body)]">{profile.email}</p>}
+                <p className="mt-2 text-[var(--color-text-body)]">{profile.email}</p>
               </div>
               <div>
                 <p className="text-sm font-semibold text-[var(--color-text-heading)]">Teléfono</p>
-                {editing ? <Input value={profile.telefono} onChange={(event) => setProfile({ ...profile, telefono: event.target.value })} className="mt-2" /> : <p className="mt-2 text-[var(--color-text-body)]">{profile.telefono}</p>}
+                <p className="mt-2 text-[var(--color-text-body)]">{profile.telefono ?? "Sin teléfono registrado"}</p>
               </div>
             </CardContent>
           </Card>
@@ -103,8 +133,8 @@ export function CompanyProfilePage() {
           <Card className="border-[var(--color-border-subtle)] shadow-sm">
             <CardHeader><CardTitle className="font-[var(--font-heading)] text-xl text-[var(--color-text-heading)]">Estado de validación</CardTitle></CardHeader>
             <CardContent className="space-y-3 text-sm text-[var(--color-text-body)]">
-              <p>Tu empresa ya aparece como validada dentro del ecosistema institucional.</p>
-              <Badge className="bg-emerald-100 text-emerald-700 border-0 hover:bg-emerald-100 w-fit">{profile.validationStatus}</Badge>
+              <p>{validationState?.message ?? "Consulta el estado actual de validación de tu empresa."}</p>
+              <Badge className="bg-emerald-100 text-emerald-700 border-0 hover:bg-emerald-100 w-fit">{validationState?.status ?? profile.validationStatus}</Badge>
             </CardContent>
           </Card>
         </div>

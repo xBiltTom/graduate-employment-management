@@ -14,8 +14,8 @@ export default async function Page({
     notFound();
   }
 
-  const applications = companyService
-    .getApplicantsByOfferId("job-1")
+  const applications = (await companyService
+    .getApplicantsByOfferId("job-1"))
     .filter((application) => application.graduateId === id)
     .map((application) => {
       const offer = adminService.getOfferById(application.offerId);

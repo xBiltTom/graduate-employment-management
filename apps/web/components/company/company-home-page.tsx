@@ -6,19 +6,27 @@ import { CompanyKpiCard } from "@/components/company/company-kpi-card";
 import { ApplicantStatusBadge } from "@/components/company/applicant-status-badge";
 import { offerStatuses } from "@/lib/constants";
 import { ROUTES } from "@/lib/routes";
-import { companyService } from "@/services";
+import type { CompanyApplicant, CompanyOfferSummary, CompanyProfile } from "@/types";
 
-export function CompanyHomePage() {
-  const mockCompanyProfile = companyService.getProfile();
-  const mockCompanyOffers = companyService.getOffers();
-  const mockCompanyApplicants = companyService.getApplicantsByOfferId("job-1");
-  const activeOffers = mockCompanyOffers.filter((offer) => offer.status === offerStatuses.active).length;
-  const totalApplications = mockCompanyOffers.reduce((acc, offer) => acc + offer.applicationsCount, 0);
-  const interviews = mockCompanyOffers.reduce((acc, offer) => acc + offer.interviewCount, 0);
-  const hired = mockCompanyOffers.reduce((acc, offer) => acc + offer.hiredCount, 0);
+type CompanyHomePageProps = {
+  profile: CompanyProfile;
+  offers: CompanyOfferSummary[];
+  applicants: CompanyApplicant[];
+};
+
+export function CompanyHomePage({
+  profile,
+  offers,
+  applicants,
+}: CompanyHomePageProps) {
+  const activeOffers = offers.filter((offer) => offer.status === offerStatuses.active).length;
+  const totalApplications = offers.reduce((acc, offer) => acc + offer.applicationsCount, 0);
+  const interviews = offers.reduce((acc, offer) => acc + offer.interviewCount, 0);
+  const hired = offers.reduce((acc, offer) => acc + offer.hiredCount, 0);
   const conversion = totalApplications > 0 ? Math.round((hired / totalApplications) * 100) : 0;
-  const recentOffers = mockCompanyOffers.filter((offer) => offer.job).slice(0, 2);
-  const recentApplicants = mockCompanyApplicants.slice(0, 3);
+  const recentOffers = offers.filter((offer) => offer.job).slice(0, 2);
+  const recentApplicants = applicants.slice(0, 3);
+  const pipelineOfferId = recentOffers[0]?.id ?? applicants[0]?.offerId;
 
   return (
     <div className="space-y-8 animate-fade-up">
@@ -30,7 +38,7 @@ export function CompanyHomePage() {
             </div>
             <div className="space-y-2">
               <h1 className="font-[var(--font-heading)] text-3xl font-bold text-[var(--color-text-heading)] md:text-4xl">
-                {mockCompanyProfile.nombreComercial}
+                {profile.nombreComercial}
               </h1>
               <p className="max-w-2xl text-[15px] leading-7 text-[var(--color-text-body)]">
                 Gestiona tus procesos de selección de manera ágil. Hoy tienes {recentApplicants.length} perfiles recientes y {interviews} entrevistas en curso.
@@ -129,7 +137,7 @@ export function CompanyHomePage() {
         <Card className="border-[var(--color-border-subtle)] shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="font-[var(--font-heading)] text-xl text-[var(--color-text-heading)]">Postulantes recientes</CardTitle>
-            <Link href={ROUTES.EMPRESA.OFERTA_POSTULANTES("job-1")} className="text-sm font-medium text-[var(--color-brand)] hover:text-[var(--color-brand-hover)]">
+            <Link href={pipelineOfferId ? ROUTES.EMPRESA.OFERTA_POSTULANTES(pipelineOfferId) : ROUTES.EMPRESA.OFERTAS} className="text-sm font-medium text-[var(--color-brand)] hover:text-[var(--color-brand-hover)]">
               Ver pipeline
             </Link>
           </CardHeader>

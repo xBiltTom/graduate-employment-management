@@ -5,10 +5,28 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApplicantStatusBadge } from "@/components/company/applicant-status-badge";
-import type { CompanyApplicant } from "@/types";
+import { ChangeApplicantStatusAction } from "@/components/company/change-applicant-status-action";
+import { applicationStatuses } from "@/lib/constants";
+import type { ApplicationHistoryEntry, CompanyApplicant } from "@/types";
 
-export function CompanyApplicantDetailPage({ applicant }: { applicant: CompanyApplicant }) {
+const nextStatusMap = {
+  [applicationStatuses.applied]: applicationStatuses.reviewing,
+  [applicationStatuses.reviewing]: applicationStatuses.interview,
+  [applicationStatuses.interview]: applicationStatuses.hired,
+} as const;
+
+export function CompanyApplicantDetailPage({
+  applicant,
+  history,
+}: {
+  applicant: CompanyApplicant;
+  history: ApplicationHistoryEntry[];
+}) {
   const action = (message: string) => toast.success(message, { description: "Acción temporal. La integración real llegará después." });
+  const canMoveForward = applicant.status in nextStatusMap;
+  const timeline = history.length ? history : (applicant.historial ?? []);
+  const canHire = applicant.status === applicationStatuses.interview;
+  const canReject = applicant.status !== applicationStatuses.hired && applicant.status !== applicationStatuses.rejected;
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -63,10 +81,31 @@ export function CompanyApplicantDetailPage({ applicant }: { applicant: CompanyAp
             <CardTitle className="font-[var(--font-heading)] text-xl text-[var(--color-text-heading)]">Acciones</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button className="w-full bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" onClick={() => action("Candidato movido a revisión")}>Mover a revisión</Button>
+            {canMoveForward ? (
+              <ChangeApplicantStatusAction
+                applicationId={applicant.applicationId}
+                nextStatus={nextStatusMap[applicant.status as keyof typeof nextStatusMap]}
+                label="Mover a la siguiente etapa"
+                className="w-full bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-hover)]"
+              />
+            ) : null}
             <Button variant="outline" className="w-full" onClick={() => action("Entrevista agendada visualmente")}>Agendar entrevista</Button>
-            <Button variant="outline" className="w-full" onClick={() => action("Candidato marcado como contratado")}>Contratar</Button>
-            <Button variant="outline" className="w-full" onClick={() => action("Candidato marcado como rechazado")}>Rechazar</Button>
+            <ChangeApplicantStatusAction
+              applicationId={applicant.applicationId}
+              nextStatus={applicationStatuses.hired}
+              label="Contratar"
+              variant="outline"
+              className="w-full"
+              disabled={!canHire}
+            />
+            <ChangeApplicantStatusAction
+              applicationId={applicant.applicationId}
+              nextStatus={applicationStatuses.rejected}
+              label="Rechazar"
+              variant="outline"
+              className="w-full"
+              disabled={!canReject}
+            />
             <Button variant="outline" className="w-full" onClick={() => action("Canal de contacto preparado")}>Contactar</Button>
           </CardContent>
         </Card>
@@ -125,7 +164,7 @@ export function CompanyApplicantDetailPage({ applicant }: { applicant: CompanyAp
           <Card className="border-[var(--color-border-subtle)] shadow-sm">
             <CardHeader><CardTitle className="font-[var(--font-heading)] text-xl text-[var(--color-text-heading)]">Historial de postulación</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              {(applicant.historial ?? []).map((entry) => (
+              {timeline.map((entry) => (
                 <div key={entry.id} className="rounded-2xl bg-[var(--color-surface-page)] p-4 text-sm">
                   <p className="font-medium text-[var(--color-text-heading)]">{entry.estadoNuevo}</p>
                   <p className="mt-1 text-[var(--color-text-muted)]">{entry.creadoEn}</p>

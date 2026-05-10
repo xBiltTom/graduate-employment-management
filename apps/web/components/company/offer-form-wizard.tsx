@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { contractTypes, offerModalities } from "@/lib/constants";
+import { getErrorMessage } from "@/lib/errors";
+import { ROUTES } from "@/lib/routes";
 import { OfferPreviewCard, type OfferDraft } from "@/components/company/offer-preview-card";
+import { companyService } from "@/services";
+import type { CompanyOfferCreateInput } from "@/types";
 
 const steps = ["Información", "Condiciones", "Ubicación"];
 
@@ -32,9 +37,11 @@ const initialDraft: OfferDraft = {
 };
 
 export function OfferFormWizard() {
+  const router = useRouter();
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<OfferDraft>(initialDraft);
   const [skillInput, setSkillInput] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateDraft = <K extends keyof OfferDraft>(key: K, value: OfferDraft[K]) => {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -52,15 +59,41 @@ export function OfferFormWizard() {
     setSkillInput("");
   };
 
-  const submitDraft = () => {
+  const submitDraft = async () => {
     if (!draft.titulo.trim() || !draft.descripcion.trim()) {
       toast.error("Completa al menos el título y la descripción antes de continuar.");
       return;
     }
 
-    toast.success("Oferta preparada para revisión", {
-      description: "La publicación real será conectada con el backend en una fase posterior.",
-    });
+    try {
+      setIsSubmitting(true);
+
+      await companyService.createOffer({
+        titulo: draft.titulo,
+        descripcion: draft.descripcion,
+        modalidad: draft.modalidad as CompanyOfferCreateInput["modalidad"],
+        tipoContrato: draft.tipoContrato as CompanyOfferCreateInput["tipoContrato"],
+        ciudad: draft.ciudad,
+        region: draft.region,
+        pais: draft.pais,
+        salarioMin: draft.salarioMin ? Number(draft.salarioMin) : undefined,
+        salarioMax: draft.salarioMax ? Number(draft.salarioMax) : undefined,
+        cierreEn: draft.cierreEn || undefined,
+        habilidadIds: [],
+      });
+
+      toast.success("Oferta enviada a revisión", {
+        description: draft.habilidades.length
+          ? "La oferta se registró. Las habilidades escritas en texto aún no se sincronizan con el catálogo real."
+          : "La oferta se registró correctamente.",
+      });
+      router.push(ROUTES.EMPRESA.OFERTAS);
+      router.refresh();
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -203,8 +236,8 @@ export function OfferFormWizard() {
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 ) : (
-                  <Button type="button" className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" onClick={submitDraft}>
-                    Enviar a revisión
+                  <Button type="button" className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white" onClick={() => void submitDraft()} disabled={isSubmitting}>
+                    {isSubmitting ? "Enviando..." : "Enviar a revisión"}
                   </Button>
                 )}
               </div>

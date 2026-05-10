@@ -1,6 +1,15 @@
+import { Card, CardContent } from "@/components/ui/card";
 import { OfferFormWizard } from "@/components/company/offer-form-wizard";
 
-export function CompanyNewOfferPage() {
+type CompanyNewOfferPageProps = {
+  canPublishOffers?: boolean;
+  validationMessage?: string;
+};
+
+export function CompanyNewOfferPage({
+  canPublishOffers = true,
+  validationMessage,
+}: CompanyNewOfferPageProps) {
   return (
     <div className="space-y-6 animate-fade-up">
       <div className="space-y-2">
@@ -10,7 +19,14 @@ export function CompanyNewOfferPage() {
           Diseña una publicación clara, prepara las condiciones y revisa cómo se verá antes de enviarla a revisión.
         </p>
       </div>
-      <OfferFormWizard />
+      {!canPublishOffers && validationMessage ? (
+        <Card className="border-[var(--color-border-subtle)] border-dashed shadow-sm">
+          <CardContent className="p-6 text-sm text-[var(--color-text-muted)]">
+            {validationMessage}
+          </CardContent>
+        </Card>
+      ) : null}
+      {canPublishOffers ? <OfferFormWizard /> : null}
     </div>
   );
 }

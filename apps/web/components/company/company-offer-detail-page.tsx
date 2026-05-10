@@ -5,28 +5,20 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CloseOfferButton } from "@/components/company/close-offer-button";
 import { ROUTES } from "@/lib/routes";
 import { ApplicantStatusBadge } from "@/components/company/applicant-status-badge";
-import type { CompanyOfferSummary, JobSummary } from "@/types";
+import { offerStatuses } from "@/lib/constants";
+import type { CompanyApplicant, CompanyOfferSummary, JobSummary } from "@/types";
 
 type OfferRecord = CompanyOfferSummary & { job: JobSummary };
-
-type ApplicantRecord = {
-  id: string;
-  nombres: string;
-  apellidos: string;
-  carrera: string;
-  ciudad: string;
-  status: string;
-  match: number;
-};
 
 export function CompanyOfferDetailPage({
   offer,
   applicants,
 }: {
   offer: OfferRecord;
-  applicants: ApplicantRecord[];
+  applicants: Pick<CompanyApplicant, "id" | "nombres" | "apellidos" | "carrera" | "ciudad" | "status" | "match">[];
 }) {
   return (
     <div className="space-y-6 animate-fade-up">
@@ -45,7 +37,7 @@ export function CompanyOfferDetailPage({
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => toast.info("La edición de ofertas se conectará luego con el backend.")}>Editar</Button>
-          <Button variant="outline" onClick={() => toast.info("El cierre de la oferta todavía es una acción visual.")}>Cerrar</Button>
+          <CloseOfferButton offerId={offer.id} disabled={offer.status === offerStatuses.closed} />
           <Link href={ROUTES.EMPRESA.OFERTA_POSTULANTES(offer.id)}>
             <Button className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white">Ver postulantes</Button>
           </Link>

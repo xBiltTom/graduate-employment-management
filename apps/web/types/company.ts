@@ -1,9 +1,48 @@
 import { companyValidationStatuses } from "@/lib/constants";
 import type { ApplicationHistoryEntry, ApplicationStatus } from "@/types/application";
-import type { JobSummary, OfferStatus } from "@/types/job";
+import type { ContractType, JobSummary, OfferModality, OfferStatus } from "@/types/job";
 
 export type CompanyValidationStatus =
   (typeof companyValidationStatuses)[keyof typeof companyValidationStatuses];
+
+export type CompanyValidationState = {
+  status: CompanyValidationStatus;
+  canPublishOffers: boolean;
+  message?: string;
+};
+
+export type CompanyProfileUpdateInput = {
+  nombreComercial?: string;
+  descripcion?: string;
+  sitioWeb?: string;
+  ciudad?: string;
+  region?: string;
+  pais?: string;
+};
+
+export type CompanyOfferCreateInput = {
+  titulo: string;
+  descripcion: string;
+  modalidad: OfferModality;
+  tipoContrato: ContractType;
+  ciudad?: string;
+  region?: string;
+  pais?: string;
+  salarioMin?: number;
+  salarioMax?: number;
+  cierreEn?: string;
+  habilidadIds?: string[];
+};
+
+export type CompanyOfferUpdateInput = CompanyOfferCreateInput & {
+  id: string;
+};
+
+export type CompanyApplicantStatusChangeInput = {
+  applicationId: string;
+  status: ApplicationStatus;
+  reason?: string;
+};
 
 export type CompanyProfile = {
   id: string;

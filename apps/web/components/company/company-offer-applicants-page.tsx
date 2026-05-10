@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { applicationStatuses } from "@/lib/constants";
 import { ROUTES } from "@/lib/routes";
 import { ApplicantStatusBadge } from "@/components/company/applicant-status-badge";
+import { ChangeApplicantStatusAction } from "@/components/company/change-applicant-status-action";
+import type { ApplicationStatus } from "@/types";
 
 type ApplicantRecord = {
   id: string;
@@ -41,8 +41,6 @@ const nextStatusMap = {
   [applicationStatuses.applied]: applicationStatuses.reviewing,
   [applicationStatuses.reviewing]: applicationStatuses.interview,
   [applicationStatuses.interview]: applicationStatuses.hired,
-  [applicationStatuses.hired]: applicationStatuses.rejected,
-  [applicationStatuses.rejected]: applicationStatuses.applied,
 } as const;
 
 export function CompanyOfferApplicantsPage({
@@ -61,16 +59,14 @@ export function CompanyOfferApplicantsPage({
     }));
   }, [items]);
 
-  const moveApplicant = (id: string) => {
+  const moveApplicant = (id: string, status: ApplicationStatus) => {
     setItems((current) =>
       current.map((item) =>
         item.id === id
-          ? { ...item, status: nextStatusMap[item.status as keyof typeof nextStatusMap] }
+          ? { ...item, status }
           : item,
       ),
     );
-
-    toast.success("Estado actualizado solo localmente.");
   };
 
   return (
@@ -93,33 +89,44 @@ export function CompanyOfferApplicantsPage({
               </CardHeader>
               <CardContent className="space-y-3">
                 {group.items.length ? (
-                  group.items.map((applicant) => (
-                    <div key={applicant.id} className="rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-page)] p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <Link href={ROUTES.EMPRESA.POSTULANTE_DETAIL(applicant.id)} className="font-semibold text-[var(--color-text-heading)] hover:text-[var(--color-brand)]">
-                            {applicant.nombres} {applicant.apellidos}
-                          </Link>
-                          <p className="mt-1 text-sm text-[var(--color-text-muted)]">{applicant.carrera}</p>
+                  group.items.map((applicant) => {
+                    const nextStatus = nextStatusMap[applicant.status as keyof typeof nextStatusMap];
+
+                    return (
+                      <div key={applicant.id} className="rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-page)] p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <Link href={ROUTES.EMPRESA.POSTULANTE_DETAIL(applicant.id)} className="font-semibold text-[var(--color-text-heading)] hover:text-[var(--color-brand)]">
+                              {applicant.nombres} {applicant.apellidos}
+                            </Link>
+                            <p className="mt-1 text-sm text-[var(--color-text-muted)]">{applicant.carrera}</p>
+                          </div>
+                          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[var(--color-brand)]">{applicant.match}%</span>
                         </div>
-                        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[var(--color-brand)]">{applicant.match}%</span>
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {applicant.skills.slice(0, 3).map((skill) => (
+                            <Badge key={skill} className="bg-white text-[var(--color-text-body)] border border-[var(--color-border-subtle)] hover:bg-white">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                        <div className="mt-3 flex items-center justify-between gap-2">
+                          <ApplicantStatusBadge status={applicant.status} />
+                          {nextStatus ? (
+                            <ChangeApplicantStatusAction
+                              applicationId={applicant.id}
+                              nextStatus={nextStatus}
+                              label="Mover"
+                              variant="outline"
+                              size="sm"
+                              onStatusChanged={(status) => moveApplicant(applicant.id, status)}
+                            />
+                          ) : null}
+                        </div>
+                        <p className="mt-3 text-xs text-[var(--color-text-muted)]">{applicant.hasCv ? "CV disponible" : "CV pendiente"}</p>
                       </div>
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {applicant.skills.slice(0, 3).map((skill) => (
-                          <Badge key={skill} className="bg-white text-[var(--color-text-body)] border border-[var(--color-border-subtle)] hover:bg-white">
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="mt-3 flex items-center justify-between gap-2">
-                        <ApplicantStatusBadge status={applicant.status} />
-                        <Button size="sm" variant="outline" onClick={() => moveApplicant(applicant.id)}>
-                          Mover
-                        </Button>
-                      </div>
-                      <p className="mt-3 text-xs text-[var(--color-text-muted)]">{applicant.hasCv ? "CV disponible" : "CV pendiente"}</p>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="rounded-2xl border border-dashed border-[var(--color-border-subtle)] p-4 text-sm text-[var(--color-text-muted)]">
                     Sin candidatos en esta etapa.

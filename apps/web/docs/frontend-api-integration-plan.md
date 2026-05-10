@@ -88,6 +88,34 @@ Frontend publicService uses:
 - Mock mode keeps the same service interface.
 - Unauthenticated graduate routes show controlled empty/error state with login action.
 
+## Company integration status
+- Home: conectado
+- Company profile read: conectado
+- Company profile update: conectado parcialmente a campos soportados por `empresas.updateMiPerfil`
+- Validation status: conectado
+- My offers: conectado
+- Offer detail: conectado
+- Create offer: conectado con campos soportados por `ofertas.create`
+- Close offer: conectado
+- Applicants by offer: conectado
+- Applicant detail: conectado
+- Change application status: conectado
+- Application history: conectado
+- Mode: works in mock and api
+
+## Company integration notes
+- Company visual components now receive data by props from route pages.
+- Route pages resolve async data through `companyService`.
+- API mode uses tRPC with company-specific mappers for profile, offers and applicants.
+- Mock mode keeps the same service interface, including profile update, offer creation/closure and application status changes.
+- Unauthenticated company routes show controlled empty/error state with login action.
+
+## Limitations
+- No real logo upload yet.
+- No real CV download yet.
+- Offer creation does not send unsupported UI fields such as `vacantes` or `direccion`.
+- Skills still require `habilidadIds`; text skills are not connected until catalog selection is implemented.
+
 ## Validation
 - `npm --prefix apps/web run lint`: ok
 - `npm --prefix apps/web run build`: ok

@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockCompanyOffers } from "@/lib/mock-data";
+import { CloseOfferButton } from "@/components/company/close-offer-button";
 import { offerStatuses } from "@/lib/constants";
 import { ROUTES } from "@/lib/routes";
+import type { CompanyOfferSummary } from "@/types";
 
 const offerStatusLabel = {
   [offerStatuses.draft]: "Borrador",
@@ -33,12 +34,16 @@ const offerStatusClass = {
   [offerStatuses.expired]: "bg-slate-200 text-slate-700",
 } as const;
 
-export function CompanyOffersPage() {
+type CompanyOffersPageProps = {
+  offers: CompanyOfferSummary[];
+};
+
+export function CompanyOffersPage({ offers: initialOffers }: CompanyOffersPageProps) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string>("all");
 
   const offers = useMemo(() => {
-    return mockCompanyOffers.filter((offer) => {
+    return initialOffers.filter((offer) => {
       if (!offer.job) return false;
 
       const matchesStatus = status === "all" || offer.status === status;
@@ -46,7 +51,7 @@ export function CompanyOffersPage() {
 
       return matchesStatus && matchesSearch;
     });
-  }, [search, status]);
+  }, [initialOffers, search, status]);
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -128,13 +133,7 @@ export function CompanyOffersPage() {
                       <Pencil className="h-4 w-4 mr-2" />
                       Editar
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="border-[var(--color-border-subtle)]"
-                      onClick={() => toast.info("El cierre de ofertas será conectado al backend más adelante.")}
-                    >
-                      Cerrar
-                    </Button>
+                    <CloseOfferButton offerId={offer.id} disabled={offer.status === offerStatuses.closed} />
                     <Link href={ROUTES.EMPRESA.OFERTA_POSTULANTES(offer.id)}>
                       <Button className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white">
                         <Users className="h-4 w-4 mr-2" />

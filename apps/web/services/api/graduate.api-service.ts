@@ -124,4 +124,8 @@ export const graduateApiService = {
 
     return mapBackendNotification(response as BackendNotification);
   },
+
+  async markAllNotificationsAsRead() {
+    await untypedTrpcClient.mutation("notificaciones.marcarTodasLeidas");
+  },
 };

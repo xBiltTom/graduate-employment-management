@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,19 +65,24 @@ export function GraduateNotificationsPage({
         ),
       );
     } catch (error) {
-      console.error(error);
-      alert(getErrorMessage(error));
+      toast.error(getErrorMessage(error));
     } finally {
       setIsSubmittingId(null);
     }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
+  const markAllAsRead = async () => {
+    try {
+      await graduateService.markAllNotificationsAsRead();
+      setNotifications((current) => current.map((notification) => ({ ...notification, read: true })));
+      toast.success("Todas las notificaciones fueron marcadas como leídas.");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications(notifications.filter(n => n.id !== id));
+  const deleteNotification = () => {
+    toast.info("La eliminación de notificaciones no está disponible en la integración actual.");
   };
 
   const filteredNotifications = notifications.filter(n => {
@@ -97,7 +103,7 @@ export function GraduateNotificationsPage({
         </div>
         
         {unreadCount > 0 && (
-          <Button onClick={markAllAsRead} variant="outline" className="border-[var(--color-border-subtle)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] text-[var(--color-text-heading)]">
+          <Button onClick={() => void markAllAsRead()} variant="outline" className="border-[var(--color-border-subtle)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] text-[var(--color-text-heading)]">
             <Check className="h-4 w-4 mr-2" /> Marcar todas como leídas
           </Button>
         )}
@@ -182,9 +188,9 @@ export function GraduateNotificationsPage({
                             <Check className="h-4 w-4 mr-2" /> Marcar como leída
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem onClick={() => deleteNotification(notification.id)} className="text-[var(--color-error)] focus:text-[var(--color-error)]">
-                          <Trash2 className="h-4 w-4 mr-2" /> Eliminar
-                        </DropdownMenuItem>
+                         <DropdownMenuItem onClick={() => deleteNotification()} className="text-[var(--color-error)] focus:text-[var(--color-error)]">
+                           <Trash2 className="h-4 w-4 mr-2" /> Eliminar
+                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>

@@ -27,14 +27,23 @@ export const graduateMockService = {
     return featuredJobs.find((job) => job.id === jobId) ?? null;
   },
   async applyToJob(jobId: string) {
-    return {
+    const existing = mockGraduateApplications.find((application) => application.jobId === jobId);
+
+    if (existing) {
+      return existing;
+    }
+
+    const created = {
       id: `mock-application-${jobId}`,
       jobId,
       graduateId: mockGraduateProfile.id,
       status: "POSTULADO" as const,
       appliedAt: new Date().toISOString(),
-      job: await graduateMockService.getJobById(jobId),
+      job: (await graduateMockService.getJobById(jobId)) ?? undefined,
     };
+
+    mockGraduateApplications.unshift(created);
+    return created;
   },
   async getApplications() {
     return mockGraduateApplications;
@@ -55,9 +64,13 @@ export const graduateMockService = {
       return null;
     }
 
-    return {
-      ...notification,
-      read: true,
-    };
+    notification.read = true;
+    return notification;
+  },
+
+  async markAllNotificationsAsRead() {
+    for (const notification of mockNotifications) {
+      notification.read = true;
+    }
   },
 };

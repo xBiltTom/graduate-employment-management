@@ -32,13 +32,14 @@ export type BackendCompanyValidationState = {
 
 export function mapCompanyValidationStatus(value?: string | null): CompanyValidationStatus {
   switch (value) {
+    case companyValidationStatuses.approved:
+      return companyValidationStatuses.approved;
     case companyValidationStatuses.pending:
       return companyValidationStatuses.pending;
     case companyValidationStatuses.rejected:
       return companyValidationStatuses.rejected;
-    case companyValidationStatuses.approved:
     default:
-      return companyValidationStatuses.approved;
+      return companyValidationStatuses.pending;
   }
 }
 

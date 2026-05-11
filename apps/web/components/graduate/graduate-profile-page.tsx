@@ -38,6 +38,28 @@ const emptyExperienceForm = {
   esActual: false,
 };
 
+function formatLocation(ciudad?: string, region?: string) {
+  return [ciudad, region].filter(Boolean).join(", ");
+}
+
+function parseLocation(value: string) {
+  const normalized = value.trim();
+
+  if (!normalized) {
+    return {
+      ciudad: "",
+      region: "",
+    };
+  }
+
+  const [cityPart, ...regionParts] = normalized.split(",");
+
+  return {
+    ciudad: cityPart?.trim() ?? "",
+    region: regionParts.join(",").trim(),
+  };
+}
+
 export function GraduateProfilePage({
   initialProfile,
 }: GraduateProfilePageProps) {
@@ -45,6 +67,9 @@ export function GraduateProfilePage({
   const [isSaving, setIsSaving] = useState(false);
   const [savedProfile, setSavedProfile] = useState(initialProfile);
   const [profile, setProfile] = useState(initialProfile);
+  const [locationInput, setLocationInput] = useState(
+    formatLocation(initialProfile.ciudad, initialProfile.region),
+  );
   const [careers, setCareers] = useState<CatalogOption[]>([]);
   const [skillsCatalog, setSkillsCatalog] = useState<SkillCatalogOption[]>([]);
   const [showEducationForm, setShowEducationForm] = useState(false);
@@ -83,14 +108,15 @@ export function GraduateProfilePage({
   const handleSave = async () => {
     try {
       setIsSaving(true);
+      const parsedLocation = parseLocation(locationInput);
 
       const updatedProfile = await graduateService.updateProfile({
         nombres: profile.nombres,
         apellidos: profile.apellidos,
         presentacion: profile.presentacion,
         telefono: profile.telefono,
-        ciudad: profile.ciudad,
-        region: profile.region,
+        ciudad: parsedLocation.ciudad,
+        region: parsedLocation.region,
         carreraId: profile.carreraId,
         anioEgreso: profile.anioEgreso,
         skills: profile.skills,
@@ -98,6 +124,7 @@ export function GraduateProfilePage({
 
       setProfile(updatedProfile);
       setSavedProfile(updatedProfile);
+      setLocationInput(formatLocation(updatedProfile.ciudad, updatedProfile.region));
       setIsEditing(false);
       toast.success("Perfil actualizado", {
         description: "Los cambios fueron guardados correctamente.",
@@ -112,26 +139,18 @@ export function GraduateProfilePage({
   };
 
   const handleEditClick = () => {
+    setLocationInput(formatLocation(profile.ciudad, profile.region));
     setIsEditing(true);
   };
 
   const handleCancel = () => {
     setProfile(savedProfile);
+    setLocationInput(formatLocation(savedProfile.ciudad, savedProfile.region));
     setIsEditing(false);
     setShowEducationForm(false);
     setShowExperienceForm(false);
     setEducationForm(emptyEducationForm);
     setExperienceForm(emptyExperienceForm);
-  };
-
-  const handleLocationChange = (value: string) => {
-    const [cityPart, regionPart] = value.split(",");
-
-    setProfile({
-      ...profile,
-      ciudad: cityPart?.trim() || "",
-      region: regionPart?.trim() || "",
-    });
   };
 
   const toggleSkill = (skillId: string) => {
@@ -521,7 +540,7 @@ export function GraduateProfilePage({
                   </div>
                   <div className="flex items-center gap-3">
                     <MapPin className="h-4 w-4 text-[var(--color-text-muted)] shrink-0" />
-                    <Input value={[profile.ciudad, profile.region].filter(Boolean).join(", ")} onChange={(e) => handleLocationChange(e.target.value)} className="h-8 text-sm border-[var(--color-border-subtle)]" placeholder="Ciudad, Región" />
+                    <Input value={locationInput} onChange={(e) => setLocationInput(e.target.value)} className="h-8 text-sm border-[var(--color-border-subtle)]" placeholder="Ciudad, Región" />
                   </div>
                 </div>
               ) : (
@@ -536,7 +555,7 @@ export function GraduateProfilePage({
                   </div>
                   <div className="flex items-start gap-3 text-sm">
                     <MapPin className="h-4 w-4 text-[var(--color-text-muted)] shrink-0 mt-0.5" />
-                    <span className="text-[var(--color-text-body)]">{profile.ciudad}, {profile.region}</span>
+                    <span className="text-[var(--color-text-body)]">{formatLocation(profile.ciudad, profile.region) || "Ubicación no especificada"}</span>
                   </div>
                 </div>
               )}

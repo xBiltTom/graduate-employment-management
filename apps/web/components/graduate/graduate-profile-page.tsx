@@ -19,6 +19,25 @@ type GraduateProfilePageProps = {
   initialProfile: GraduateProfile;
 };
 
+const emptyEducationForm = {
+  institucion: "",
+  grado: "",
+  campo: "",
+  fechaInicio: "",
+  fechaFin: "",
+  esActual: false,
+  descripcion: "",
+};
+
+const emptyExperienceForm = {
+  empresa: "",
+  cargo: "",
+  descripcion: "",
+  fechaInicio: "",
+  fechaFin: "",
+  esActual: false,
+};
+
 export function GraduateProfilePage({
   initialProfile,
 }: GraduateProfilePageProps) {
@@ -28,6 +47,12 @@ export function GraduateProfilePage({
   const [profile, setProfile] = useState(initialProfile);
   const [careers, setCareers] = useState<CatalogOption[]>([]);
   const [skillsCatalog, setSkillsCatalog] = useState<SkillCatalogOption[]>([]);
+  const [showEducationForm, setShowEducationForm] = useState(false);
+  const [showExperienceForm, setShowExperienceForm] = useState(false);
+  const [isAddingEducation, setIsAddingEducation] = useState(false);
+  const [isAddingExperience, setIsAddingExperience] = useState(false);
+  const [educationForm, setEducationForm] = useState(emptyEducationForm);
+  const [experienceForm, setExperienceForm] = useState(emptyExperienceForm);
 
   useEffect(() => {
     let isMounted = true;
@@ -93,6 +118,10 @@ export function GraduateProfilePage({
   const handleCancel = () => {
     setProfile(savedProfile);
     setIsEditing(false);
+    setShowEducationForm(false);
+    setShowExperienceForm(false);
+    setEducationForm(emptyEducationForm);
+    setExperienceForm(emptyExperienceForm);
   };
 
   const handleLocationChange = (value: string) => {
@@ -125,6 +154,69 @@ export function GraduateProfilePage({
       ...profile,
       skills: [...profile.skills, { id: selectedSkill.id, name: selectedSkill.name }],
     });
+  };
+
+  const handleAddEducation = async () => {
+    if (!educationForm.institucion.trim()) {
+      toast.error("Ingresa la institución.");
+      return;
+    }
+
+    try {
+      setIsAddingEducation(true);
+      const updatedProfile = await graduateService.addEducation({
+        institucion: educationForm.institucion,
+        ...(educationForm.grado ? { grado: educationForm.grado } : {}),
+        ...(educationForm.campo ? { campo: educationForm.campo } : {}),
+        ...(educationForm.fechaInicio ? { fechaInicio: educationForm.fechaInicio } : {}),
+        ...(educationForm.fechaFin && !educationForm.esActual
+          ? { fechaFin: educationForm.fechaFin }
+          : {}),
+        esActual: educationForm.esActual,
+        ...(educationForm.descripcion ? { descripcion: educationForm.descripcion } : {}),
+      });
+
+      setProfile(updatedProfile);
+      setSavedProfile(updatedProfile);
+      setEducationForm(emptyEducationForm);
+      setShowEducationForm(false);
+      toast.success("Formación agregada correctamente.");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setIsAddingEducation(false);
+    }
+  };
+
+  const handleAddExperience = async () => {
+    if (!experienceForm.empresa.trim() || !experienceForm.cargo.trim()) {
+      toast.error("Ingresa la empresa y el cargo.");
+      return;
+    }
+
+    try {
+      setIsAddingExperience(true);
+      const updatedProfile = await graduateService.addExperience({
+        empresa: experienceForm.empresa,
+        cargo: experienceForm.cargo,
+        ...(experienceForm.descripcion ? { descripcion: experienceForm.descripcion } : {}),
+        ...(experienceForm.fechaInicio ? { fechaInicio: experienceForm.fechaInicio } : {}),
+        ...(experienceForm.fechaFin && !experienceForm.esActual
+          ? { fechaFin: experienceForm.fechaFin }
+          : {}),
+        esActual: experienceForm.esActual,
+      });
+
+      setProfile(updatedProfile);
+      setSavedProfile(updatedProfile);
+      setExperienceForm(emptyExperienceForm);
+      setShowExperienceForm(false);
+      toast.success("Experiencia agregada correctamente.");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setIsAddingExperience(false);
+    }
   };
 
   return (
@@ -259,13 +351,37 @@ export function GraduateProfilePage({
                 Formación Académica
               </CardTitle>
               {isEditing && (
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-[var(--color-brand)] hover:text-[var(--color-brand-hover)] hover:bg-[var(--color-brand-light)]">
+                <Button type="button" variant="ghost" size="icon" onClick={() => setShowEducationForm((current) => !current)} className="h-8 w-8 text-[var(--color-brand)] hover:text-[var(--color-brand-hover)] hover:bg-[var(--color-brand-light)]">
                   <Plus className="h-4 w-4" />
                 </Button>
               )}
             </CardHeader>
             <CardContent className="p-6 sm:p-8">
               <div className="space-y-6">
+                {isEditing && showEducationForm ? (
+                  <div className="space-y-3 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface)]/50 p-4">
+                    <Input value={educationForm.institucion} onChange={(e) => setEducationForm({ ...educationForm, institucion: e.target.value })} className="h-9 border-[var(--color-border-subtle)]" placeholder="Institución" />
+                    <Input value={educationForm.grado} onChange={(e) => setEducationForm({ ...educationForm, grado: e.target.value })} className="h-9 border-[var(--color-border-subtle)]" placeholder="Grado / Título" />
+                    <Input value={educationForm.campo} onChange={(e) => setEducationForm({ ...educationForm, campo: e.target.value })} className="h-9 border-[var(--color-border-subtle)]" placeholder="Campo de estudio" />
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Input value={educationForm.fechaInicio} onChange={(e) => setEducationForm({ ...educationForm, fechaInicio: e.target.value })} type="date" className="h-9 border-[var(--color-border-subtle)]" />
+                      <Input value={educationForm.fechaFin} onChange={(e) => setEducationForm({ ...educationForm, fechaFin: e.target.value })} type="date" disabled={educationForm.esActual} className="h-9 border-[var(--color-border-subtle)] disabled:opacity-60" />
+                    </div>
+                    <label className="flex items-center gap-2 text-sm text-[var(--color-text-body)]">
+                      <input type="checkbox" checked={educationForm.esActual} onChange={(e) => setEducationForm({ ...educationForm, esActual: e.target.checked, fechaFin: e.target.checked ? "" : educationForm.fechaFin })} />
+                      Actualmente curso o estudio aquí
+                    </label>
+                    <Textarea value={educationForm.descripcion} onChange={(e) => setEducationForm({ ...educationForm, descripcion: e.target.value })} className="min-h-[90px] border-[var(--color-border-subtle)]" placeholder="Descripción opcional" />
+                    <div className="flex justify-end gap-2">
+                      <Button type="button" variant="outline" onClick={() => { setShowEducationForm(false); setEducationForm(emptyEducationForm); }} className="border-[var(--color-border-subtle)] text-[var(--color-text-muted)]">
+                        Cancelar
+                      </Button>
+                      <Button type="button" onClick={() => void handleAddEducation()} disabled={isAddingEducation} className="bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-white">
+                        {isAddingEducation ? "Agregando..." : "Agregar formación"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
                 {(profile.education ?? []).map((edu, idx) => (
                   <div key={idx} className="flex gap-4">
                     <div className="flex flex-col items-center">
@@ -301,13 +417,36 @@ export function GraduateProfilePage({
                 Experiencia Laboral
               </CardTitle>
               {isEditing && (
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-[var(--color-teal)] hover:text-[var(--color-teal)]/90 hover:bg-[var(--color-teal)]/10">
+                <Button type="button" variant="ghost" size="icon" onClick={() => setShowExperienceForm((current) => !current)} className="h-8 w-8 text-[var(--color-teal)] hover:text-[var(--color-teal)]/90 hover:bg-[var(--color-teal)]/10">
                   <Plus className="h-4 w-4" />
                 </Button>
               )}
             </CardHeader>
             <CardContent className="p-6 sm:p-8">
               <div className="space-y-6">
+                {isEditing && showExperienceForm ? (
+                  <div className="space-y-3 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface)]/50 p-4">
+                    <Input value={experienceForm.cargo} onChange={(e) => setExperienceForm({ ...experienceForm, cargo: e.target.value })} className="h-9 border-[var(--color-border-subtle)]" placeholder="Cargo / Rol" />
+                    <Input value={experienceForm.empresa} onChange={(e) => setExperienceForm({ ...experienceForm, empresa: e.target.value })} className="h-9 border-[var(--color-border-subtle)]" placeholder="Empresa" />
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Input value={experienceForm.fechaInicio} onChange={(e) => setExperienceForm({ ...experienceForm, fechaInicio: e.target.value })} type="date" className="h-9 border-[var(--color-border-subtle)]" />
+                      <Input value={experienceForm.fechaFin} onChange={(e) => setExperienceForm({ ...experienceForm, fechaFin: e.target.value })} type="date" disabled={experienceForm.esActual} className="h-9 border-[var(--color-border-subtle)] disabled:opacity-60" />
+                    </div>
+                    <label className="flex items-center gap-2 text-sm text-[var(--color-text-body)]">
+                      <input type="checkbox" checked={experienceForm.esActual} onChange={(e) => setExperienceForm({ ...experienceForm, esActual: e.target.checked, fechaFin: e.target.checked ? "" : experienceForm.fechaFin })} />
+                      Actualmente trabajo aquí
+                    </label>
+                    <Textarea value={experienceForm.descripcion} onChange={(e) => setExperienceForm({ ...experienceForm, descripcion: e.target.value })} className="min-h-[90px] border-[var(--color-border-subtle)]" placeholder="Descripción de responsabilidades" />
+                    <div className="flex justify-end gap-2">
+                      <Button type="button" variant="outline" onClick={() => { setShowExperienceForm(false); setExperienceForm(emptyExperienceForm); }} className="border-[var(--color-border-subtle)] text-[var(--color-text-muted)]">
+                        Cancelar
+                      </Button>
+                      <Button type="button" onClick={() => void handleAddExperience()} disabled={isAddingExperience} className="bg-[var(--color-teal)] hover:bg-[var(--color-teal)]/90 text-white">
+                        {isAddingExperience ? "Agregando..." : "Agregar experiencia"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
                 {(profile.experience ?? []).map((exp, idx) => (
                   <div key={idx} className="flex gap-4">
                     <div className="flex flex-col items-center">

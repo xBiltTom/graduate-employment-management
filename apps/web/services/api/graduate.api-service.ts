@@ -37,6 +37,25 @@ type GraduateProfileUpdateInput = {
   skills?: GraduateSkill[];
 };
 
+type GraduateEducationCreateInput = {
+  institucion: string;
+  grado?: string;
+  campo?: string;
+  fechaInicio?: string;
+  fechaFin?: string;
+  esActual?: boolean;
+  descripcion?: string;
+};
+
+type GraduateExperienceCreateInput = {
+  empresa: string;
+  cargo: string;
+  descripcion?: string;
+  fechaInicio?: string;
+  fechaFin?: string;
+  esActual?: boolean;
+};
+
 const untypedTrpcClient = getUntypedClient(trpcClient);
 
 function getItems<T>(response: unknown) {
@@ -77,6 +96,33 @@ export const graduateApiService = {
 
     const updatedProfile = await untypedTrpcClient.query("egresados.getMiPerfil");
     return mapBackendGraduateProfile(updatedProfile as BackendGraduateProfile);
+  },
+
+  async addEducation(input: GraduateEducationCreateInput) {
+    await untypedTrpcClient.mutation("egresados.addFormacion", {
+      institucion: input.institucion.trim(),
+      ...(input.grado ? { grado: input.grado.trim() } : {}),
+      ...(input.campo ? { campo: input.campo.trim() } : {}),
+      ...(input.fechaInicio ? { fechaInicio: input.fechaInicio } : {}),
+      ...(input.fechaFin ? { fechaFin: input.fechaFin } : {}),
+      ...(input.esActual !== undefined ? { esActual: input.esActual } : {}),
+      ...(input.descripcion ? { descripcion: input.descripcion.trim() } : {}),
+    });
+
+    return graduateApiService.getProfile();
+  },
+
+  async addExperience(input: GraduateExperienceCreateInput) {
+    await untypedTrpcClient.mutation("egresados.addExperiencia", {
+      empresa: input.empresa.trim(),
+      cargo: input.cargo.trim(),
+      ...(input.descripcion ? { descripcion: input.descripcion.trim() } : {}),
+      ...(input.fechaInicio ? { fechaInicio: input.fechaInicio } : {}),
+      ...(input.fechaFin ? { fechaFin: input.fechaFin } : {}),
+      ...(input.esActual !== undefined ? { esActual: input.esActual } : {}),
+    });
+
+    return graduateApiService.getProfile();
   },
 
   async getRecommendedJobs() {

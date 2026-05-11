@@ -31,6 +31,74 @@ export const graduateMockService = {
       ...(input.skills !== undefined ? { skills: input.skills } : {}),
     };
   },
+  async addEducation(input: {
+    institucion: string;
+    grado?: string;
+    campo?: string;
+    fechaInicio?: string;
+    fechaFin?: string;
+    esActual?: boolean;
+    descripcion?: string;
+  }) {
+    const startYear = input.fechaInicio ? new Date(input.fechaInicio).getFullYear() : undefined;
+    const endYear = input.esActual
+      ? "Actual"
+      : input.fechaFin
+        ? new Date(input.fechaFin).getFullYear()
+        : undefined;
+
+    mockGraduateProfile.education = [
+      {
+        institution: input.institucion,
+        degree: input.grado || input.campo || "Formación no especificada",
+        period:
+          startYear && endYear
+            ? `${startYear} - ${endYear}`
+            : startYear
+              ? `${startYear}`
+              : endYear
+                ? `${endYear}`
+                : "Periodo no especificado",
+      },
+      ...(mockGraduateProfile.education ?? []),
+    ];
+
+    return mockGraduateProfile;
+  },
+  async addExperience(input: {
+    empresa: string;
+    cargo: string;
+    descripcion?: string;
+    fechaInicio?: string;
+    fechaFin?: string;
+    esActual?: boolean;
+  }) {
+    const startYear = input.fechaInicio ? new Date(input.fechaInicio).getFullYear() : undefined;
+    const endYear = input.esActual
+      ? "Actual"
+      : input.fechaFin
+        ? new Date(input.fechaFin).getFullYear()
+        : undefined;
+
+    mockGraduateProfile.experience = [
+      {
+        company: input.empresa,
+        role: input.cargo,
+        period:
+          startYear && endYear
+            ? `${startYear} - ${endYear}`
+            : startYear
+              ? `${startYear}`
+              : endYear
+                ? `${endYear}`
+                : "Periodo no especificado",
+        description: input.descripcion || "Sin descripción disponible.",
+      },
+      ...(mockGraduateProfile.experience ?? []),
+    ];
+
+    return mockGraduateProfile;
+  },
   async getRecommendedJobs() {
     return featuredJobs;
   },

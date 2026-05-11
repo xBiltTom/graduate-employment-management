@@ -51,7 +51,10 @@ export class RegisterDto {
   )
   dni?: string;
 
-  @ValidateIf((object: RegisterDto) => object.rol === RolUsuario.EGRESADO)
+  @ValidateIf(
+    (object: RegisterDto) =>
+      object.rol === RolUsuario.EGRESADO || object.rol === RolUsuario.EMPRESA,
+  )
   @IsOptional()
   @IsString()
   @Transform(({ value }: { value: unknown }) =>
@@ -108,14 +111,6 @@ export class RegisterDto {
   @IsOptional()
   @IsUUID()
   sectorId?: string;
-
-  @ValidateIf((object: RegisterDto) => object.rol === RolUsuario.EMPRESA)
-  @IsOptional()
-  @IsString()
-  @Transform(({ value }: { value: unknown }) =>
-    typeof value === 'string' ? value.trim() : value,
-  )
-  telefono?: string;
 
   @ValidateIf((object: RegisterDto) => object.rol === RolUsuario.EMPRESA)
   @IsOptional()

@@ -20,6 +20,7 @@ export type BackendAdminCompany = {
     email?: string | null;
   } | null;
   sector?: {
+    id?: string | null;
     nombre?: string | null;
   } | null;
 };

@@ -60,6 +60,22 @@ export type AdminSkillUpdateInput = {
   category?: string;
 };
 
+export type AdminCatalogCreateInput = {
+  name: string;
+  description?: string;
+};
+
+export type AdminCatalogUpdateInput = {
+  id: string;
+  name?: string;
+  description?: string;
+};
+
+export type AdminSectorCreateInput = AdminCatalogCreateInput;
+export type AdminSectorUpdateInput = AdminCatalogUpdateInput;
+export type AdminCareerCreateInput = AdminCatalogCreateInput;
+export type AdminCareerUpdateInput = AdminCatalogUpdateInput;
+
 export type AdminApplicationsFilters = {
   graduateId?: string;
   companyId?: string;
@@ -135,5 +151,17 @@ export type AdminSkill = {
   usageInGraduates: number;
   usageInOffers: number;
 };
+
+export type AdminCatalogItem = {
+  id: string;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  updatedAt: string;
+  usageCount: number;
+};
+
+export type AdminSector = AdminCatalogItem;
+export type AdminCareer = AdminCatalogItem;
 
 export type AdminReport = ReportSummary;

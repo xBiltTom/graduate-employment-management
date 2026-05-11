@@ -137,23 +137,42 @@ export class AuthService {
       await this.ensureRucIsAvailable(dto.ruc ?? '');
 
       const user = await this.prisma.$transaction((tx) =>
-        tx.usuario.create({
-          data: {
-            email: dto.email,
-            passwordHash,
-            rol: RolUsuario.EMPRESA,
-            estado: EstadoUsuario.PENDIENTE,
-            proveedorAuth: ProveedorAuth.CREDENCIALES,
-            empresa: {
-              create: {
-                nombreComercial: dto.nombreComercial ?? '',
-                razonSocial: dto.razonSocial ?? '',
-                ruc: dto.ruc ?? '',
-                estadoValidacion: EstadoValidacionEmpresa.PENDIENTE,
+        (async () => {
+          if (dto.sectorId) {
+            const sector = await tx.sector.findUnique({
+              where: { id: dto.sectorId },
+              select: { id: true },
+            });
+
+            if (!sector) {
+              throw new BadRequestException('El sector seleccionado no existe');
+            }
+          }
+
+          return tx.usuario.create({
+            data: {
+              email: dto.email,
+              passwordHash,
+              rol: RolUsuario.EMPRESA,
+              estado: EstadoUsuario.PENDIENTE,
+              proveedorAuth: ProveedorAuth.CREDENCIALES,
+              empresa: {
+                create: {
+                  nombreComercial: dto.nombreComercial ?? '',
+                  razonSocial: dto.razonSocial ?? '',
+                  ruc: dto.ruc ?? '',
+                  sectorId: dto.sectorId,
+                  telefono: dto.telefono ?? null,
+                  sitioWeb: dto.sitioWeb ?? null,
+                  ciudad: dto.ciudad ?? null,
+                  region: dto.region ?? null,
+                  descripcion: dto.descripcion ?? null,
+                  estadoValidacion: EstadoValidacionEmpresa.PENDIENTE,
+                },
               },
             },
-          },
-        }),
+          });
+        })(),
       );
 
       return this.buildAuthResult({

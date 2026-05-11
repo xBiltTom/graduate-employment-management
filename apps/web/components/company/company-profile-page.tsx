@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { getErrorMessage } from "@/lib/errors";
-import { companyService } from "@/services";
-import type { CompanyProfile, CompanyValidationState } from "@/types";
+import { companyService, publicService } from "@/services";
+import type { CatalogOption, CompanyProfile, CompanyValidationState } from "@/types";
 
 type CompanyProfilePageProps = {
   initialProfile: CompanyProfile;
@@ -24,6 +25,31 @@ export function CompanyProfilePage({
   const [saving, setSaving] = useState(false);
   const [savedProfile, setSavedProfile] = useState(initialProfile);
   const [profile, setProfile] = useState(initialProfile);
+  const [sectors, setSectors] = useState<CatalogOption[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    void publicService.getSectors()
+      .then((items) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setSectors(items);
+      })
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        setSectors([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const save = async () => {
     try {
@@ -31,17 +57,21 @@ export function CompanyProfilePage({
 
       const updatedProfile = await companyService.updateProfile({
         nombreComercial: profile.nombreComercial,
+        telefono: profile.telefono,
         descripcion: profile.descripcion,
         sitioWeb: profile.sitioWeb,
+        direccion: profile.direccion,
         ciudad: profile.ciudad,
         region: profile.region,
+        pais: profile.pais,
+        sectorId: profile.sectorId,
       });
 
       setProfile(updatedProfile);
       setSavedProfile(updatedProfile);
       setEditing(false);
       toast.success("Perfil actualizado", {
-        description: "Se guardaron los campos compatibles con la integración actual.",
+        description: "La información de la empresa fue actualizada correctamente.",
       });
     } catch (error) {
       toast.error(getErrorMessage(error));
@@ -88,7 +118,32 @@ export function CompanyProfilePage({
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-[var(--color-text-heading)]">Sector</p>
-                <p className="text-[var(--color-text-body)]">{profile.sector}</p>
+                {editing ? (
+                  <Select
+                    value={profile.sectorId ?? ""}
+                    onValueChange={(value) => {
+                      const selectedSector = sectors.find((sector) => sector.id === value);
+                      setProfile({
+                        ...profile,
+                        sectorId: value || undefined,
+                        sector: selectedSector?.name ?? profile.sector,
+                      });
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un sector" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sectors.map((sector) => (
+                        <SelectItem key={sector.id} value={sector.id}>
+                          {sector.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-[var(--color-text-body)]">{profile.sector}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-[var(--color-text-heading)]">Sitio web</p>
@@ -101,6 +156,14 @@ export function CompanyProfilePage({
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-[var(--color-text-heading)]">Región</p>
                 {editing ? <Input value={profile.region ?? ""} onChange={(event) => setProfile({ ...profile, region: event.target.value })} /> : <p className="text-[var(--color-text-body)]">{profile.region}</p>}
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-[var(--color-text-heading)]">País</p>
+                {editing ? <Input value={profile.pais ?? ""} onChange={(event) => setProfile({ ...profile, pais: event.target.value })} /> : <p className="text-[var(--color-text-body)]">{profile.pais ?? "Peru"}</p>}
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <p className="text-sm font-semibold text-[var(--color-text-heading)]">Dirección</p>
+                {editing ? <Input value={profile.direccion ?? ""} onChange={(event) => setProfile({ ...profile, direccion: event.target.value })} /> : <p className="text-[var(--color-text-body)]">{profile.direccion ?? "Sin dirección registrada"}</p>}
               </div>
             </div>
 
@@ -125,7 +188,11 @@ export function CompanyProfilePage({
               </div>
               <div>
                 <p className="text-sm font-semibold text-[var(--color-text-heading)]">Teléfono</p>
-                <p className="mt-2 text-[var(--color-text-body)]">{profile.telefono ?? "Sin teléfono registrado"}</p>
+                {editing ? (
+                  <Input value={profile.telefono ?? ""} onChange={(event) => setProfile({ ...profile, telefono: event.target.value })} className="mt-2" />
+                ) : (
+                  <p className="mt-2 text-[var(--color-text-body)]">{profile.telefono ?? "Sin teléfono registrado"}</p>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -10,13 +10,16 @@ export type BackendCompanyProfile = {
   nombreComercial?: string | null;
   razonSocial?: string | null;
   ruc?: string | null;
+  telefono?: string | null;
   descripcion?: string | null;
   sitioWeb?: string | null;
+  direccion?: string | null;
   ciudad?: string | null;
   region?: string | null;
   pais?: string | null;
   estadoValidacion?: string | null;
   sector?: {
+    id?: string | null;
     nombre?: string | null;
   } | null;
   usuario?: {
@@ -49,11 +52,15 @@ export function mapBackendCompanyProfile(profile: BackendCompanyProfile): Compan
     nombreComercial: profile.nombreComercial ?? "Empresa",
     razonSocial: profile.razonSocial ?? "Razón social no especificada",
     ruc: profile.ruc ?? "",
+    sectorId: profile.sector?.id ?? undefined,
     sector: profile.sector?.nombre ?? "Sector no especificado",
     email: profile.usuario?.email ?? "",
+    telefono: profile.telefono ?? undefined,
     sitioWeb: profile.sitioWeb ?? undefined,
+    direccion: profile.direccion ?? undefined,
     ciudad: profile.ciudad ?? undefined,
     region: profile.region ?? undefined,
+    pais: profile.pais ?? undefined,
     descripcion: profile.descripcion ?? undefined,
     validationStatus: mapCompanyValidationStatus(profile.estadoValidacion),
   };

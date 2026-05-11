@@ -39,6 +39,8 @@ export const adminRoutes = {
   offers: "/admin/ofertas",
   reports: "/admin/reportes",
   skills: "/admin/habilidades",
+  sectors: "/admin/sectores",
+  careers: "/admin/carreras",
   settings: "/admin/configuracion",
 };
 
@@ -80,6 +82,8 @@ export const ROUTES = {
     OFERTAS: adminRoutes.offers,
     REPORTES: adminRoutes.reports,
     HABILIDADES: adminRoutes.skills,
+    SECTORES: adminRoutes.sectors,
+    CARRERAS: adminRoutes.careers,
     CONFIGURACION: adminRoutes.settings,
   }
 };

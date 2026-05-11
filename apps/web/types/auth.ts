@@ -23,6 +23,12 @@ export type RegisterCompanyInput = {
   ruc: string;
   razonSocial: string;
   nombreComercial: string;
+  sectorId?: string;
+  telefono?: string;
+  sitioWeb?: string;
+  ciudad?: string;
+  region?: string;
+  descripcion?: string;
 };
 
 export type AuthUser = {

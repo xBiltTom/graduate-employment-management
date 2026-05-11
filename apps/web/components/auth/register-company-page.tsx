@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,11 +8,13 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { ROUTES } from "@/lib/routes";
 import { useAuthActions } from "@/hooks/use-auth-actions";
-import type { RegisterCompanyInput } from "@/types";
+import { publicService } from "@/services";
+import type { CatalogOption, RegisterCompanyInput } from "@/types";
 
 const STEPS = [
   { key: "cuenta", label: "Cuenta", description: "Credenciales de acceso" },
@@ -29,10 +31,11 @@ const companySchema = z
     ruc: z.string().min(1, "Ingresa el RUC"),
     razonSocial: z.string().min(1, "Ingresa la razón social"),
     nombreComercial: z.string().min(1, "Ingresa el nombre comercial"),
-    sector: z.string().optional(),
+    sectorId: z.string().optional(),
     telefono: z.string().optional(),
     sitioWeb: z.string().optional(),
-    ubicacion: z.string().optional(),
+    ciudad: z.string().optional(),
+    region: z.string().optional(),
     descripcion: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -46,9 +49,12 @@ export function RegisterCompanyPage() {
   const { registerCompany } = useAuthActions();
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sectors, setSectors] = useState<CatalogOption[]>([]);
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     trigger,
     formState: { errors },
   } = useForm<CompanyRegisterForm>({
@@ -60,13 +66,40 @@ export function RegisterCompanyPage() {
       ruc: "",
       razonSocial: "",
       nombreComercial: "",
-      sector: "",
+      sectorId: "",
       telefono: "",
       sitioWeb: "",
-      ubicacion: "",
+      ciudad: "",
+      region: "",
       descripcion: "",
     },
   });
+
+  const selectedSectorId = watch("sectorId");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    void publicService.getSectors()
+      .then((items) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setSectors(items);
+      })
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        setSectors([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   async function handleNext() {
     const stepFields: Array<Array<keyof CompanyRegisterForm>> = [
@@ -103,6 +136,12 @@ export function RegisterCompanyPage() {
       ruc: values.ruc,
       razonSocial: values.razonSocial,
       nombreComercial: values.nombreComercial,
+      ...(values.sectorId ? { sectorId: values.sectorId } : {}),
+      ...(values.telefono ? { telefono: values.telefono } : {}),
+      ...(values.sitioWeb ? { sitioWeb: values.sitioWeb } : {}),
+      ...(values.ciudad ? { ciudad: values.ciudad } : {}),
+      ...(values.region ? { region: values.region } : {}),
+      ...(values.descripcion ? { descripcion: values.descripcion } : {}),
     };
 
     try {
@@ -257,12 +296,27 @@ export function RegisterCompanyPage() {
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="reg-comp-sector" className="text-sm">Sector</Label>
-                      <Input
-                        id="reg-comp-sector"
-                        placeholder="Tecnología"
-                        {...register("sector")}
-                        className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
-                      />
+                      <Select
+                        value={selectedSectorId || ""}
+                        onValueChange={(value) => {
+                          setValue("sectorId", value || undefined, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                            shouldValidate: false,
+                          });
+                        }}
+                      >
+                        <SelectTrigger id="reg-comp-sector" className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]">
+                          <SelectValue placeholder="Selecciona un sector" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {sectors.map((sector) => (
+                            <SelectItem key={sector.id} value={sector.id}>
+                              {sector.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                   </div>
                 </div>
               </div>
@@ -292,11 +346,20 @@ export function RegisterCompanyPage() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="reg-comp-ubic" className="text-sm">Ubicación</Label>
+                  <Label htmlFor="reg-comp-ciudad" className="text-sm">Ciudad</Label>
                     <Input
-                      id="reg-comp-ubic"
-                      placeholder="Trujillo, La Libertad"
-                      {...register("ubicacion")}
+                      id="reg-comp-ciudad"
+                      placeholder="Trujillo"
+                      {...register("ciudad")}
+                      className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
+                    />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg-comp-region" className="text-sm">Región</Label>
+                    <Input
+                      id="reg-comp-region"
+                      placeholder="La Libertad"
+                      {...register("region")}
                       className="border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-teal)]"
                     />
                 </div>

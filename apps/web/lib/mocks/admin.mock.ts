@@ -8,7 +8,16 @@ import {
   skillTypes,
   userStatuses,
 } from "@/lib/constants";
-import type { AdminCompany, AdminGraduate, AdminOffer, AdminSkill, AdminStats, ReportSummary } from "@/types";
+import type {
+  AdminCompany,
+  AdminGraduate,
+  AdminOffer,
+  AdminSkill,
+  AdminStats,
+  AdminCareer as AdminCareerType,
+  AdminSector as AdminSectorType,
+  ReportSummary,
+} from "@/types";
 
 export const mockAdminStats: AdminStats = {
   totalGraduates: 1240,
@@ -202,4 +211,58 @@ export const mockAdminSkills: AdminSkill[] = [
   { id: "skill-2", name: "Comunicación efectiva", type: skillTypes.soft, usageInGraduates: 280, usageInOffers: 36, category: "Interpersonal" },
   { id: "skill-3", name: "Node.js", type: skillTypes.technical, usageInGraduates: 190, usageInOffers: 28, category: "Backend" },
   { id: "skill-4", name: "Trabajo en equipo", type: skillTypes.soft, usageInGraduates: 340, usageInOffers: 44, category: "Colaboración" },
+];
+
+export const mockAdminSectors: AdminSectorType[] = [
+  {
+    id: "sector-1",
+    name: "Tecnología",
+    description: "Empresas de software, analítica, producto digital e infraestructura.",
+    isActive: true,
+    updatedAt: "2026-05-05",
+    usageCount: 24,
+  },
+  {
+    id: "sector-2",
+    name: "Servicios digitales",
+    description: "Consultoría, automatización, marketing digital y operaciones online.",
+    isActive: true,
+    updatedAt: "2026-05-04",
+    usageCount: 11,
+  },
+  {
+    id: "sector-3",
+    name: "Logística",
+    description: "Cadena de suministro, distribución, almacenes y optimización operativa.",
+    isActive: false,
+    updatedAt: "2026-04-28",
+    usageCount: 3,
+  },
+];
+
+export const mockAdminCareers: AdminCareerType[] = [
+  {
+    id: "career-1",
+    name: "Ingeniería de Sistemas",
+    description: "Carrera orientada a análisis, arquitectura y gestión de sistemas de información.",
+    isActive: true,
+    updatedAt: "2026-05-05",
+    usageCount: 38,
+  },
+  {
+    id: "career-2",
+    name: "Ingeniería de Software",
+    description: "Formación especializada en desarrollo, calidad y ciclo de vida de productos de software.",
+    isActive: true,
+    updatedAt: "2026-05-03",
+    usageCount: 31,
+  },
+  {
+    id: "career-3",
+    name: "Diseño UX",
+    description: "Programa emergente para perfiles con foco en experiencia, interfaz y prototipado.",
+    isActive: false,
+    updatedAt: "2026-04-30",
+    usageCount: 4,
+  },
 ];

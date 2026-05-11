@@ -18,10 +18,14 @@ export const companyMockService = {
       ...(input.nombreComercial !== undefined
         ? { nombreComercial: input.nombreComercial }
         : {}),
+      ...(input.telefono !== undefined ? { telefono: input.telefono } : {}),
       ...(input.descripcion !== undefined ? { descripcion: input.descripcion } : {}),
       ...(input.sitioWeb !== undefined ? { sitioWeb: input.sitioWeb } : {}),
+      ...(input.direccion !== undefined ? { direccion: input.direccion } : {}),
       ...(input.ciudad !== undefined ? { ciudad: input.ciudad } : {}),
       ...(input.region !== undefined ? { region: input.region } : {}),
+      ...(input.pais !== undefined ? { pais: input.pais } : {}),
+      ...(input.sectorId !== undefined ? { sectorId: input.sectorId } : {}),
     };
   },
 

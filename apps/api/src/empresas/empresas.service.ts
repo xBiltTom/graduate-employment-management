@@ -69,6 +69,7 @@ const privateEmpresaSelect = {
   nombreComercial: true,
   razonSocial: true,
   ruc: true,
+  telefono: true,
   descripcion: true,
   sitioWeb: true,
   direccion: true,
@@ -127,6 +128,9 @@ export class EmpresasService {
       data: {
         ...(input.nombreComercial !== undefined
           ? { nombreComercial: input.nombreComercial.trim() }
+          : {}),
+        ...(input.telefono !== undefined
+          ? { telefono: input.telefono?.trim() ?? null }
           : {}),
         ...(input.descripcion !== undefined
           ? { descripcion: input.descripcion?.trim() ?? null }

@@ -18,6 +18,15 @@ type BackendCareerListResponse = {
   data?: BackendCareer[];
 };
 
+type BackendSector = {
+  id: string;
+  nombre?: string | null;
+};
+
+type BackendSectorListResponse = {
+  data?: BackendSector[];
+};
+
 type BackendSkill = {
   id: string;
   nombre?: string | null;
@@ -72,6 +81,22 @@ export const publicApiService = {
       name: skill.nombre ?? "Habilidad sin nombre",
       category: skill.categoria ?? undefined,
       type: skill.tipo ?? undefined,
+    }));
+  },
+
+  async getSectors(): Promise<CatalogOption[]> {
+    const response = await untypedTrpcClient.query("sectores.list", {
+      page: 1,
+      limit: 100,
+      estaActivo: true,
+    });
+
+    const payload = response as BackendSectorListResponse;
+    const items = Array.isArray(payload) ? payload : (payload.data ?? []);
+
+    return items.map((sector) => ({
+      id: sector.id,
+      name: sector.nombre ?? "Sector sin nombre",
     }));
   },
 

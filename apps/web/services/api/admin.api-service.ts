@@ -4,9 +4,13 @@ import { applicationStatuses, companyValidationStatuses, offerStatuses } from "@
 import { trpcClient } from "@/lib/api/trpc-client";
 import type {
   AdminApplicationsFilters,
+  AdminCareerCreateInput,
+  AdminCareerUpdateInput,
   AdminCompanyValidationInput,
   AdminOfferModerationInput,
   AdminReportRequestInput,
+  AdminSectorCreateInput,
+  AdminSectorUpdateInput,
   AdminSkillCreateInput,
   AdminSkillUpdateInput,
 } from "@/types";
@@ -43,6 +47,16 @@ type PaginationMeta = {
 type PaginatedResponse<T> = {
   data?: T[];
   meta?: PaginationMeta;
+};
+
+type BackendAdminCatalogItem = {
+  id: string;
+  nombre?: string | null;
+  descripcion?: string | null;
+  estaActivo?: boolean | null;
+  estaActiva?: boolean | null;
+  creadoEn?: string | null;
+  actualizadoEn?: string | null;
 };
 
 const untypedTrpcClient = getUntypedClient(trpcClient);
@@ -144,6 +158,56 @@ async function buildSkillUsageMaps() {
     graduateUsage,
     offerUsage,
   };
+}
+
+function mapAdminCatalogItem(
+  item: BackendAdminCatalogItem,
+  usageCount = 0,
+) {
+  return {
+    id: item.id,
+    name: item.nombre ?? "Elemento sin nombre",
+    description: item.descripcion ?? undefined,
+    isActive: item.estaActivo ?? item.estaActiva ?? false,
+    updatedAt: item.actualizadoEn ?? item.creadoEn ?? "",
+    usageCount,
+  };
+}
+
+async function buildSectorUsageMap() {
+  const response = await untypedTrpcClient.query("empresas.listar", {
+    page: 1,
+    limit: 100,
+  });
+
+  return getItems<BackendAdminCompany>(response).reduce<Record<string, number>>((accumulator, company) => {
+    const sectorId = company.sector?.id;
+
+    if (!sectorId) {
+      return accumulator;
+    }
+
+    accumulator[sectorId] = (accumulator[sectorId] ?? 0) + 1;
+    return accumulator;
+  }, {});
+}
+
+async function buildCareerUsageMap() {
+  const response = await untypedTrpcClient.query("egresados.buscar", {
+    page: 1,
+    limit: 100,
+  });
+
+  return getItems<BackendAdminGraduate>(response).reduce<Record<string, number>>((accumulator, graduate) => {
+    const careerId = graduate.carrera?.id;
+
+    if (!careerId) {
+      return accumulator;
+    }
+
+    accumulator[careerId] = (accumulator[careerId] ?? 0) + 1;
+    return accumulator;
+  }, {});
 }
 
 export const adminApiService = {
@@ -454,5 +518,85 @@ export const adminApiService = {
 
   async deleteSkill(id: string) {
     await untypedTrpcClient.mutation("habilidades.delete", { id });
+  },
+
+  async getSectors() {
+    const [response, usageMap] = await Promise.all([
+      untypedTrpcClient.query("sectores.list", {
+        page: 1,
+        limit: 100,
+      }),
+      buildSectorUsageMap(),
+    ]);
+
+    return getItems<BackendAdminCatalogItem>(response).map((sector) =>
+      mapAdminCatalogItem(sector, usageMap[sector.id] ?? 0),
+    );
+  },
+
+  async createSector(input: AdminSectorCreateInput) {
+    const response = await untypedTrpcClient.mutation("sectores.create", {
+      nombre: input.name.trim(),
+      ...(input.description ? { descripcion: input.description.trim() } : {}),
+    });
+
+    return mapAdminCatalogItem(response as BackendAdminCatalogItem, 0);
+  },
+
+  async updateSector(input: AdminSectorUpdateInput) {
+    const response = await untypedTrpcClient.mutation("sectores.update", {
+      id: input.id,
+      ...(input.name !== undefined ? { nombre: input.name.trim() } : {}),
+      ...(input.description !== undefined
+        ? { descripcion: normalizeNullableText(input.description) }
+        : {}),
+    });
+
+    return mapAdminCatalogItem(response as BackendAdminCatalogItem, 0);
+  },
+
+  async toggleSectorActive(id: string) {
+    const response = await untypedTrpcClient.mutation("sectores.toggleActivo", { id });
+    return mapAdminCatalogItem(response as BackendAdminCatalogItem, 0);
+  },
+
+  async getCareers() {
+    const [response, usageMap] = await Promise.all([
+      untypedTrpcClient.query("carreras.list", {
+        page: 1,
+        limit: 100,
+      }),
+      buildCareerUsageMap(),
+    ]);
+
+    return getItems<BackendAdminCatalogItem>(response).map((career) =>
+      mapAdminCatalogItem(career, usageMap[career.id] ?? 0),
+    );
+  },
+
+  async createCareer(input: AdminCareerCreateInput) {
+    const response = await untypedTrpcClient.mutation("carreras.create", {
+      nombre: input.name.trim(),
+      ...(input.description ? { descripcion: input.description.trim() } : {}),
+    });
+
+    return mapAdminCatalogItem(response as BackendAdminCatalogItem, 0);
+  },
+
+  async updateCareer(input: AdminCareerUpdateInput) {
+    const response = await untypedTrpcClient.mutation("carreras.update", {
+      id: input.id,
+      ...(input.name !== undefined ? { nombre: input.name.trim() } : {}),
+      ...(input.description !== undefined
+        ? { descripcion: normalizeNullableText(input.description) }
+        : {}),
+    });
+
+    return mapAdminCatalogItem(response as BackendAdminCatalogItem, 0);
+  },
+
+  async toggleCareerActive(id: string) {
+    const response = await untypedTrpcClient.mutation("carreras.toggleActiva", { id });
+    return mapAdminCatalogItem(response as BackendAdminCatalogItem, 0);
   },
 };

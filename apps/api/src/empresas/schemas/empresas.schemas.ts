@@ -5,6 +5,7 @@ const trimmedString = z.string().trim();
 
 export const updateMiPerfilEmpresaSchema = z.object({
   nombreComercial: trimmedString.min(1).optional(),
+  telefono: z.union([trimmedString.min(1), z.null()]).optional(),
   descripcion: z.union([trimmedString.min(1), z.null()]).optional(),
   sitioWeb: z.union([trimmedString.min(1), z.null()]).optional(),
   direccion: z.union([trimmedString.min(1), z.null()]).optional(),

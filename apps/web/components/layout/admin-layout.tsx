@@ -4,8 +4,10 @@ import {
   Bell,
   Briefcase,
   Building2,
+  BriefcaseBusiness,
   GraduationCap,
   LayoutDashboard,
+  LibraryBig,
   Settings,
   Sparkles,
   UserCog,
@@ -20,6 +22,8 @@ const mainItems = [
   { href: ROUTES.ADMIN.OFERTAS, label: "Ofertas", icon: Briefcase },
   { href: ROUTES.ADMIN.REPORTES, label: "Reportes", icon: BarChart3 },
   { href: ROUTES.ADMIN.HABILIDADES, label: "Habilidades", icon: Sparkles },
+  { href: ROUTES.ADMIN.SECTORES, label: "Sectores", icon: BriefcaseBusiness },
+  { href: ROUTES.ADMIN.CARRERAS, label: "Carreras", icon: LibraryBig },
   { href: ROUTES.ADMIN.CONFIGURACION, label: "Configuración", icon: Settings },
 ];
 

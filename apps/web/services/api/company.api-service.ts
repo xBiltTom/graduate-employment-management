@@ -60,15 +60,22 @@ export const companyApiService = {
       ...(input.nombreComercial !== undefined
         ? { nombreComercial: normalizeText(input.nombreComercial) }
         : {}),
+      ...(input.telefono !== undefined
+        ? { telefono: normalizeNullableText(input.telefono) }
+        : {}),
       ...(input.descripcion !== undefined
         ? { descripcion: normalizeNullableText(input.descripcion) }
         : {}),
       ...(input.sitioWeb !== undefined
         ? { sitioWeb: normalizeNullableText(input.sitioWeb) }
         : {}),
+      ...(input.direccion !== undefined
+        ? { direccion: normalizeNullableText(input.direccion) }
+        : {}),
       ...(input.ciudad !== undefined ? { ciudad: normalizeNullableText(input.ciudad) } : {}),
       ...(input.region !== undefined ? { region: normalizeNullableText(input.region) } : {}),
       ...(input.pais !== undefined ? { pais: normalizeNullableText(input.pais) } : {}),
+      ...(input.sectorId !== undefined ? { sectorId: input.sectorId ?? null } : {}),
     });
 
     return mapBackendCompanyProfile(response as BackendCompanyProfile);

@@ -23,6 +23,13 @@ export const publicMockService = {
       { id: "skill-git", name: "Git", category: "Herramientas", type: "TECNICA" },
     ];
   },
+  async getSectors() {
+    return [
+      { id: "sector-tech", name: "Tecnología" },
+      { id: "sector-education", name: "Educación" },
+      { id: "sector-finance", name: "Finanzas" },
+    ];
+  },
   async getJobById(id: string) {
     return featuredJobs.find((job) => job.id === id) ?? null;
   },

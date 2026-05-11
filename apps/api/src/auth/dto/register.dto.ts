@@ -103,4 +103,49 @@ export class RegisterDto {
     typeof value === 'string' ? value.trim() : value,
   )
   ruc?: string;
+
+  @ValidateIf((object: RegisterDto) => object.rol === RolUsuario.EMPRESA)
+  @IsOptional()
+  @IsUUID()
+  sectorId?: string;
+
+  @ValidateIf((object: RegisterDto) => object.rol === RolUsuario.EMPRESA)
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  telefono?: string;
+
+  @ValidateIf((object: RegisterDto) => object.rol === RolUsuario.EMPRESA)
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  sitioWeb?: string;
+
+  @ValidateIf((object: RegisterDto) => object.rol === RolUsuario.EMPRESA)
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  ciudad?: string;
+
+  @ValidateIf((object: RegisterDto) => object.rol === RolUsuario.EMPRESA)
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  region?: string;
+
+  @ValidateIf((object: RegisterDto) => object.rol === RolUsuario.EMPRESA)
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  descripcion?: string;
 }

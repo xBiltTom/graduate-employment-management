@@ -13,11 +13,14 @@ export type CompanyValidationState = {
 
 export type CompanyProfileUpdateInput = {
   nombreComercial?: string;
+  telefono?: string;
   descripcion?: string;
   sitioWeb?: string;
+  direccion?: string;
   ciudad?: string;
   region?: string;
   pais?: string;
+  sectorId?: string;
 };
 
 export type CompanyOfferCreateInput = {
@@ -49,12 +52,15 @@ export type CompanyProfile = {
   nombreComercial: string;
   razonSocial: string;
   ruc: string;
+  sectorId?: string;
   sector: string;
   email: string;
   telefono?: string;
   sitioWeb?: string;
+  direccion?: string;
   ciudad?: string;
   region?: string;
+  pais?: string;
   descripcion?: string;
   validationStatus: CompanyValidationStatus;
 };

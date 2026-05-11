@@ -1,16 +1,22 @@
 import { applicationStatuses, companyValidationStatuses, offerStatuses, reportStatuses } from "@/lib/constants";
 import {
+  mockAdminCareers,
   mockAdminCompanies,
   mockAdminGraduates,
   mockAdminOffers,
   mockAdminReports,
+  mockAdminSectors,
   mockAdminSkills,
 } from "@/lib/mocks";
 import type {
   AdminApplicationsFilters,
+  AdminCareerCreateInput,
+  AdminCareerUpdateInput,
   AdminCompanyValidationInput,
   AdminOfferModerationInput,
   AdminReportRequestInput,
+  AdminSectorCreateInput,
+  AdminSectorUpdateInput,
   AdminSkillCreateInput,
   AdminSkillUpdateInput,
 } from "@/types";
@@ -204,5 +210,83 @@ export const adminMockService = {
     }
 
     mockAdminSkills.splice(index, 1);
+  },
+  async getSectors() {
+    return mockAdminSectors;
+  },
+  async createSector(input: AdminSectorCreateInput) {
+    const sector = {
+      id: `sector-${Date.now()}`,
+      name: input.name,
+      description: input.description,
+      isActive: true,
+      updatedAt: new Date().toISOString(),
+      usageCount: 0,
+    };
+
+    mockAdminSectors.unshift(sector);
+    return sector;
+  },
+  async updateSector(input: AdminSectorUpdateInput) {
+    const sector = mockAdminSectors.find((item) => item.id === input.id);
+
+    if (!sector) {
+      throw new Error("Sector no encontrado");
+    }
+
+    sector.name = input.name ?? sector.name;
+    sector.description = input.description ?? sector.description;
+    sector.updatedAt = new Date().toISOString();
+    return sector;
+  },
+  async toggleSectorActive(id: string) {
+    const sector = mockAdminSectors.find((item) => item.id === id);
+
+    if (!sector) {
+      throw new Error("Sector no encontrado");
+    }
+
+    sector.isActive = !sector.isActive;
+    sector.updatedAt = new Date().toISOString();
+    return sector;
+  },
+  async getCareers() {
+    return mockAdminCareers;
+  },
+  async createCareer(input: AdminCareerCreateInput) {
+    const career = {
+      id: `career-${Date.now()}`,
+      name: input.name,
+      description: input.description,
+      isActive: true,
+      updatedAt: new Date().toISOString(),
+      usageCount: 0,
+    };
+
+    mockAdminCareers.unshift(career);
+    return career;
+  },
+  async updateCareer(input: AdminCareerUpdateInput) {
+    const career = mockAdminCareers.find((item) => item.id === input.id);
+
+    if (!career) {
+      throw new Error("Carrera no encontrada");
+    }
+
+    career.name = input.name ?? career.name;
+    career.description = input.description ?? career.description;
+    career.updatedAt = new Date().toISOString();
+    return career;
+  },
+  async toggleCareerActive(id: string) {
+    const career = mockAdminCareers.find((item) => item.id === id);
+
+    if (!career) {
+      throw new Error("Carrera no encontrada");
+    }
+
+    career.isActive = !career.isActive;
+    career.updatedAt = new Date().toISOString();
+    return career;
   },
 };

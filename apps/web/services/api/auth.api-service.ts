@@ -86,6 +86,12 @@ export const authApiService = {
       ruc: input.ruc,
       razonSocial: input.razonSocial,
       nombreComercial: input.nombreComercial,
+      ...(input.sectorId ? { sectorId: input.sectorId } : {}),
+      ...(input.telefono ? { telefono: input.telefono.trim() } : {}),
+      ...(input.sitioWeb ? { sitioWeb: input.sitioWeb.trim() } : {}),
+      ...(input.ciudad ? { ciudad: input.ciudad.trim() } : {}),
+      ...(input.region ? { region: input.region.trim() } : {}),
+      ...(input.descripcion ? { descripcion: input.descripcion.trim() } : {}),
     });
 
     return mapAuthResponse(response);

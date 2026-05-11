@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { getErrorMessage } from "@/lib/errors";
-import { graduateService } from "@/services";
-import type { GraduateProfile } from "@/types";
+import { graduateService, publicService } from "@/services";
+import type { CatalogOption, GraduateProfile, SkillCatalogOption } from "@/types";
 
 import { User, Mail, Phone, MapPin, GraduationCap, Briefcase, Plus, FileText, CheckCircle2, Edit2, Download } from "lucide-react";
 
@@ -24,16 +26,49 @@ export function GraduateProfilePage({
   const [isSaving, setIsSaving] = useState(false);
   const [savedProfile, setSavedProfile] = useState(initialProfile);
   const [profile, setProfile] = useState(initialProfile);
+  const [careers, setCareers] = useState<CatalogOption[]>([]);
+  const [skillsCatalog, setSkillsCatalog] = useState<SkillCatalogOption[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    void Promise.all([publicService.getCareers(), publicService.getSkills()])
+      .then(([careerOptions, skillOptions]) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setCareers(careerOptions);
+        setSkillsCatalog(skillOptions);
+      })
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        setCareers([]);
+        setSkillsCatalog([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSave = async () => {
     try {
       setIsSaving(true);
 
       const updatedProfile = await graduateService.updateProfile({
+        nombres: profile.nombres,
+        apellidos: profile.apellidos,
         presentacion: profile.presentacion,
         telefono: profile.telefono,
         ciudad: profile.ciudad,
         region: profile.region,
+        carreraId: profile.carreraId,
+        anioEgreso: profile.anioEgreso,
+        skills: profile.skills,
       });
 
       setProfile(updatedProfile);
@@ -58,6 +93,38 @@ export function GraduateProfilePage({
   const handleCancel = () => {
     setProfile(savedProfile);
     setIsEditing(false);
+  };
+
+  const handleLocationChange = (value: string) => {
+    const [cityPart, regionPart] = value.split(",");
+
+    setProfile({
+      ...profile,
+      ciudad: cityPart?.trim() || "",
+      region: regionPart?.trim() || "",
+    });
+  };
+
+  const toggleSkill = (skillId: string) => {
+    const existingSkill = profile.skills.find((skill) => skill.id === skillId);
+
+    if (existingSkill) {
+      setProfile({
+        ...profile,
+        skills: profile.skills.filter((skill) => skill.id !== skillId),
+      });
+      return;
+    }
+
+    const selectedSkill = skillsCatalog.find((skill) => skill.id === skillId);
+    if (!selectedSkill) {
+      return;
+    }
+
+    setProfile({
+      ...profile,
+      skills: [...profile.skills, { id: selectedSkill.id, name: selectedSkill.name }],
+    });
   };
 
   return (
@@ -113,7 +180,40 @@ export function GraduateProfilePage({
                     <div className="grid grid-cols-2 gap-3">
                       <Input value={profile.nombres} onChange={(e) => setProfile({...profile, nombres: e.target.value})} className="font-[var(--font-heading)] font-bold text-lg h-10 border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]" placeholder="Nombres" />
                       <Input value={profile.apellidos} onChange={(e) => setProfile({...profile, apellidos: e.target.value})} className="font-[var(--font-heading)] font-bold text-lg h-10 border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]" placeholder="Apellidos" />
-                      <Input value={profile.carrera} onChange={(e) => setProfile({...profile, carrera: e.target.value})} className="col-span-2 text-sm h-9 border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]" placeholder="Carrera / Título" />
+                      <div className="col-span-2 grid gap-3 sm:grid-cols-[minmax(0,1fr)_140px]">
+                        <Select
+                          value={profile.carreraId ?? ""}
+                          onValueChange={(value) => {
+                            const selectedCareer = careers.find((career) => career.id === value);
+                            setProfile({
+                              ...profile,
+                              carreraId: value || undefined,
+                              carrera: selectedCareer?.name ?? profile.carrera,
+                            });
+                          }}
+                        >
+                          <SelectTrigger className="w-full text-sm h-9 border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]">
+                            <SelectValue placeholder="Selecciona tu carrera" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {careers.map((career) => (
+                              <SelectItem key={career.id} value={career.id}>
+                                {career.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          value={String(profile.anioEgreso ?? "")}
+                          onChange={(e) => setProfile({
+                            ...profile,
+                            anioEgreso: Number(e.target.value) || new Date().getFullYear(),
+                          })}
+                          className="text-sm h-9 border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-brand)]"
+                          placeholder="Año"
+                          inputMode="numeric"
+                        />
+                      </div>
                     </div>
                   ) : (
                     <>
@@ -274,15 +374,15 @@ export function GraduateProfilePage({
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Mail className="h-4 w-4 text-[var(--color-text-muted)] shrink-0" />
-                    <Input value={profile.email} onChange={(e) => setProfile({...profile, email: e.target.value})} className="h-8 text-sm border-[var(--color-border-subtle)]" placeholder="Email" />
+                    <Input value={profile.email} readOnly className="h-8 text-sm border-[var(--color-border-subtle)] bg-[var(--color-surface)] text-[var(--color-text-muted)]" placeholder="Email" />
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="h-4 w-4 text-[var(--color-text-muted)] shrink-0" />
-                    <Input value={profile.telefono} onChange={(e) => setProfile({...profile, telefono: e.target.value})} className="h-8 text-sm border-[var(--color-border-subtle)]" placeholder="Teléfono" />
+                    <Input value={profile.telefono ?? ""} onChange={(e) => setProfile({...profile, telefono: e.target.value})} className="h-8 text-sm border-[var(--color-border-subtle)]" placeholder="Teléfono" />
                   </div>
                   <div className="flex items-center gap-3">
                     <MapPin className="h-4 w-4 text-[var(--color-text-muted)] shrink-0" />
-                    <Input value={`${profile.ciudad}, ${profile.region}`} onChange={(e) => setProfile({...profile, ciudad: e.target.value.split(',')[0] || profile.ciudad})} className="h-8 text-sm border-[var(--color-border-subtle)]" placeholder="Ciudad, Región" />
+                    <Input value={[profile.ciudad, profile.region].filter(Boolean).join(", ")} onChange={(e) => handleLocationChange(e.target.value)} className="h-8 text-sm border-[var(--color-border-subtle)]" placeholder="Ciudad, Región" />
                   </div>
                 </div>
               ) : (
@@ -313,25 +413,42 @@ export function GraduateProfilePage({
               {isEditing ? (
                 <div className="space-y-3">
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {profile.skills.map(skill => (
-                      <Badge key={skill} variant="secondary" className="bg-[var(--color-surface)] text-[var(--color-text-body)] border border-[var(--color-border-subtle)] font-medium pr-1.5">
-                        {skill}
-                        <span className="ml-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] cursor-pointer">×</span>
+                    {profile.skills.map((skill) => (
+                      <Badge key={skill.id} variant="secondary" className="bg-[var(--color-surface)] text-[var(--color-text-body)] border border-[var(--color-border-subtle)] font-medium pr-1.5">
+                        {skill.name}
+                        <button type="button" onClick={() => toggleSkill(skill.id)} className="ml-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] cursor-pointer">×</button>
                       </Badge>
                     ))}
                   </div>
-                  <div className="flex gap-2">
-                    <Input className="h-8 text-sm border-[var(--color-border-subtle)]" placeholder="Nueva habilidad..." />
-                    <Button size="sm" variant="outline" className="h-8 w-8 p-0 border-[var(--color-border-subtle)] text-[var(--color-text-heading)]">
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-[var(--color-text-muted)]">Selecciona habilidades del catálogo</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {skillsCatalog.map((skill) => {
+                        const isSelected = profile.skills.some((item) => item.id === skill.id);
+
+                        return (
+                          <button
+                            key={skill.id}
+                            type="button"
+                            onClick={() => toggleSkill(skill.id)}
+                            className={`rounded-full border px-3 py-1 text-sm transition-colors ${
+                              isSelected
+                                ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white"
+                                : "border-[var(--color-border-subtle)] bg-white text-[var(--color-text-body)]"
+                            }`}
+                          >
+                            {skill.name}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {profile.skills.map(skill => (
-                    <Badge key={skill} variant="secondary" className="bg-[var(--color-brand-light)] text-[var(--color-brand)] border-0 font-medium">
-                      {skill}
+                  {profile.skills.map((skill) => (
+                    <Badge key={skill.id} variant="secondary" className="bg-[var(--color-brand-light)] text-[var(--color-brand)] border-0 font-medium">
+                      {skill.name}
                     </Badge>
                   ))}
                 </div>

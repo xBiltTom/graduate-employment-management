@@ -11,6 +11,10 @@ export type RegisterGraduateInput = {
   nombres: string;
   apellidos: string;
   dni: string;
+  telefono?: string;
+  carreraId?: string;
+  anioEgreso?: number;
+  habilidadIds?: string[];
 };
 
 export type RegisterCompanyInput = {

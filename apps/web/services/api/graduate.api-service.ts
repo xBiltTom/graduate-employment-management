@@ -18,6 +18,7 @@ import {
   mapBackendOfferToJobSummary,
   type BackendPublicOffer,
 } from "@/services/mappers/public-offers.mapper";
+import type { GraduateSkill } from "@/types";
 
 type PaginatedResponse<T> = {
   data?: T[];
@@ -25,10 +26,15 @@ type PaginatedResponse<T> = {
 };
 
 type GraduateProfileUpdateInput = {
+  nombres?: string;
+  apellidos?: string;
   presentacion?: string;
   telefono?: string;
   ciudad?: string;
   region?: string;
+  carreraId?: string;
+  anioEgreso?: number;
+  skills?: GraduateSkill[];
 };
 
 const untypedTrpcClient = getUntypedClient(trpcClient);
@@ -46,6 +52,8 @@ export const graduateApiService = {
 
   async updateProfile(input: GraduateProfileUpdateInput) {
     const response = await untypedTrpcClient.mutation("egresados.updateMiPerfil", {
+      ...(input.nombres !== undefined ? { nombres: input.nombres.trim() } : {}),
+      ...(input.apellidos !== undefined ? { apellidos: input.apellidos.trim() } : {}),
       ...(input.presentacion !== undefined
         ? { presentacion: input.presentacion.trim() || null }
         : {}),
@@ -54,9 +62,21 @@ export const graduateApiService = {
         : {}),
       ...(input.ciudad !== undefined ? { ciudad: input.ciudad.trim() || null } : {}),
       ...(input.region !== undefined ? { region: input.region.trim() || null } : {}),
+      ...(input.carreraId !== undefined ? { carreraId: input.carreraId || null } : {}),
+      ...(input.anioEgreso !== undefined ? { anioEgreso: input.anioEgreso } : {}),
     });
 
-    return mapBackendGraduateProfile(response as BackendGraduateProfile);
+    if (input.skills !== undefined) {
+      await untypedTrpcClient.mutation("egresados.syncHabilidades", {
+        habilidades: input.skills.map((skill) => ({
+          habilidadId: skill.id,
+          nivel: "INTERMEDIO",
+        })),
+      });
+    }
+
+    const updatedProfile = await untypedTrpcClient.query("egresados.getMiPerfil");
+    return mapBackendGraduateProfile(updatedProfile as BackendGraduateProfile);
   },
 
   async getRecommendedJobs() {

@@ -1,7 +1,9 @@
 import type { GraduateEducation, GraduateExperience, GraduateProfile } from "@/types";
 
 type BackendGraduateSkill = {
+  habilidadId?: string | null;
   habilidad?: {
+    id?: string | null;
     nombre?: string | null;
   } | null;
 };
@@ -29,6 +31,7 @@ type BackendGraduateUser = {
 };
 
 type BackendGraduateCareer = {
+  id?: string | null;
   nombre?: string | null;
 };
 
@@ -137,6 +140,7 @@ export function mapBackendGraduateProfile(
     nombres: profile.nombres ?? "",
     apellidos: profile.apellidos ?? "",
     email: profile.usuario?.email ?? "",
+    carreraId: profile.carrera?.id ?? undefined,
     carrera: profile.carrera?.nombre ?? "Carrera no especificada",
     anioEgreso: profile.anioEgreso ?? new Date().getFullYear(),
     ciudad: profile.ciudad ?? undefined,
@@ -146,8 +150,17 @@ export function mapBackendGraduateProfile(
     profileCompletion: calculateProfileCompletion(profile),
     skills:
       profile.habilidades
-        ?.map((item) => item.habilidad?.nombre)
-        .filter((skill): skill is string => Boolean(skill)) ?? [],
+        ?.map((item) => {
+          const id = item.habilidad?.id ?? item.habilidadId;
+          const name = item.habilidad?.nombre;
+
+          if (!id || !name) {
+            return null;
+          }
+
+          return { id, name };
+        })
+        .filter((skill): skill is NonNullable<typeof skill> => Boolean(skill)) ?? [],
     education: profile.formaciones?.map(mapEducation) ?? [],
     experience: profile.experiencias?.map(mapExperience) ?? [],
   };

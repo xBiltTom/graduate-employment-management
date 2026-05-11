@@ -20,6 +20,16 @@ export type PaginationParams = {
   pageSize?: number;
 };
 
+export type CatalogOption = {
+  id: string;
+  name: string;
+};
+
+export type SkillCatalogOption = CatalogOption & {
+  category?: string;
+  type?: string;
+};
+
 export type PaginatedResult<T> = {
   items: T[];
   total: number;

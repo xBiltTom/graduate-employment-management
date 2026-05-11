@@ -241,6 +241,10 @@ export class EgresadosService {
     await this.prisma.egresado.update({
       where: { id: userId },
       data: {
+        ...(input.nombres !== undefined ? { nombres: input.nombres.trim() } : {}),
+        ...(input.apellidos !== undefined
+          ? { apellidos: input.apellidos.trim() }
+          : {}),
         ...(input.presentacion !== undefined
           ? { presentacion: input.presentacion?.trim() ?? null }
           : {}),

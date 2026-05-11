@@ -17,6 +17,7 @@ export const mockGraduateProfile: GraduateProfile & {
   nombres: "Ana",
   apellidos: "Torres",
   email: "ana.torres@example.com",
+  carreraId: "career-systems",
   carrera: "Ingeniería de Sistemas",
   anioEgreso: 2024,
   ciudad: "Trujillo",
@@ -25,7 +26,13 @@ export const mockGraduateProfile: GraduateProfile & {
   presentacion:
     "Egresada interesada en desarrollo frontend, testing y soluciones digitales. Buscando oportunidades para aplicar mis conocimientos en proyectos desafiantes y seguir aprendiendo de profesionales experimentados.",
   profileCompletion: 75,
-  skills: ["React", "TypeScript", "SQL", "Testing", "Tailwind CSS", "Git"],
+  skills: [
+    { id: "skill-react", name: "React" },
+    { id: "skill-typescript", name: "TypeScript" },
+    { id: "skill-sql", name: "SQL" },
+    { id: "skill-testing", name: "Testing" },
+    { id: "skill-git", name: "Git" },
+  ],
   education: [
     {
       institution: "Universidad Nacional de Trujillo",

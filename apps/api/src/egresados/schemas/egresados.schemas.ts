@@ -5,6 +5,8 @@ const trimmedString = z.string().trim();
 const dateLikeSchema = z.union([z.string(), z.date(), z.null()]);
 
 export const updateMiPerfilSchema = z.object({
+  nombres: trimmedString.min(1).optional(),
+  apellidos: trimmedString.min(1).optional(),
   presentacion: z.union([trimmedString.min(1), z.null()]).optional(),
   telefono: z.union([trimmedString.min(1), z.null()]).optional(),
   direccion: z.union([trimmedString.min(1), z.null()]).optional(),

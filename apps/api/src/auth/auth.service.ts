@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -53,23 +54,76 @@ export class AuthService {
     if (dto.rol === RolUsuario.EGRESADO) {
       await this.ensureDniIsAvailable(dto.dni ?? '');
 
+      if (dto.anioEgreso !== undefined) {
+        this.validateGraduateAnioEgreso(dto.anioEgreso);
+      }
+
+      const habilidadIds = dto.habilidadIds ?? [];
+      if (new Set(habilidadIds).size !== habilidadIds.length) {
+        throw new BadRequestException('No se permiten habilidades duplicadas');
+      }
+
       const user = await this.prisma.$transaction((tx) =>
-        tx.usuario.create({
-          data: {
-            email: dto.email,
-            passwordHash,
-            rol: RolUsuario.EGRESADO,
-            estado: EstadoUsuario.ACTIVO,
-            proveedorAuth: ProveedorAuth.CREDENCIALES,
-            egresado: {
-              create: {
-                nombres: dto.nombres ?? '',
-                apellidos: dto.apellidos ?? '',
-                dni: dto.dni ?? '',
+        (async () => {
+          if (dto.carreraId) {
+            const carrera = await tx.carrera.findUnique({
+              where: { id: dto.carreraId },
+              select: { id: true },
+            });
+
+            if (!carrera) {
+              throw new BadRequestException('La carrera seleccionada no existe');
+            }
+          }
+
+          if (habilidadIds.length > 0) {
+            const habilidades = await tx.habilidad.findMany({
+              where: {
+                id: {
+                  in: habilidadIds,
+                },
+              },
+              select: { id: true },
+            });
+
+            if (habilidades.length !== habilidadIds.length) {
+              throw new BadRequestException(
+                'Una o más habilidades seleccionadas no existen',
+              );
+            }
+          }
+
+          const createdUser = await tx.usuario.create({
+            data: {
+              email: dto.email,
+              passwordHash,
+              rol: RolUsuario.EGRESADO,
+              estado: EstadoUsuario.ACTIVO,
+              proveedorAuth: ProveedorAuth.CREDENCIALES,
+              egresado: {
+                create: {
+                  nombres: dto.nombres ?? '',
+                  apellidos: dto.apellidos ?? '',
+                  dni: dto.dni ?? '',
+                  telefono: dto.telefono ?? null,
+                  carreraId: dto.carreraId,
+                  anioEgreso: dto.anioEgreso,
+                },
               },
             },
-          },
-        }),
+          });
+
+          if (habilidadIds.length > 0) {
+            await tx.habilidadEgresado.createMany({
+              data: habilidadIds.map((habilidadId) => ({
+                egresadoId: createdUser.id,
+                habilidadId,
+              })),
+            });
+          }
+
+          return createdUser;
+        })(),
       );
 
       return this.buildAuthResult({
@@ -376,6 +430,14 @@ export class AuthService {
 
     if (existingCompany) {
       throw new ConflictException('El RUC ya está registrado');
+    }
+  }
+
+  private validateGraduateAnioEgreso(anioEgreso: number): void {
+    const currentYear = new Date().getFullYear();
+
+    if (anioEgreso < 1950 || anioEgreso > currentYear + 10) {
+      throw new BadRequestException('El año de egreso está fuera de rango');
     }
   }
 

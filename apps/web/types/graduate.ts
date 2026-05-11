@@ -11,11 +11,17 @@ export type GraduateExperience = {
   description: string;
 };
 
+export type GraduateSkill = {
+  id: string;
+  name: string;
+};
+
 export type GraduateProfile = {
   id: string;
   nombres: string;
   apellidos: string;
   email: string;
+  carreraId?: string;
   carrera: string;
   anioEgreso: number;
   ciudad?: string;
@@ -23,7 +29,7 @@ export type GraduateProfile = {
   telefono?: string;
   presentacion?: string;
   profileCompletion: number;
-  skills: string[];
+  skills: GraduateSkill[];
   education?: GraduateEducation[];
   experience?: GraduateExperience[];
 };

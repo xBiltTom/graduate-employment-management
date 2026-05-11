@@ -67,6 +67,12 @@ export const authApiService = {
       nombres: input.nombres,
       apellidos: input.apellidos,
       dni: input.dni,
+      ...(input.telefono ? { telefono: input.telefono.trim() } : {}),
+      ...(input.carreraId ? { carreraId: input.carreraId } : {}),
+      ...(input.anioEgreso !== undefined ? { anioEgreso: input.anioEgreso } : {}),
+      ...(input.habilidadIds && input.habilidadIds.length > 0
+        ? { habilidadIds: input.habilidadIds }
+        : {}),
     });
 
     return mapAuthResponse(response);

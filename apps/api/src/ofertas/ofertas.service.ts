@@ -15,6 +15,7 @@ import { AuditoriaService } from '../auditoria/auditoria.service';
 import {
   buildPaginationMeta,
   normalizePagination,
+  runPaginatedReadQueries,
 } from '../common/utils/pagination.util';
 import { EmpresasService } from '../empresas/empresas.service';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
@@ -117,7 +118,7 @@ export class OfertasService {
         ? privateOfertaSelect
         : publicOfertaSelect;
 
-    const [data, total] = await this.prisma.$transaction([
+    const [data, total] = await runPaginatedReadQueries(
       this.prisma.ofertaLaboral.findMany({
         where,
         select,
@@ -126,7 +127,7 @@ export class OfertasService {
         orderBy: [{ publicadoEn: 'desc' }, { creadoEn: 'desc' }],
       }),
       this.prisma.ofertaLaboral.count({ where }),
-    ]);
+    );
 
     return {
       data,
@@ -138,7 +139,7 @@ export class OfertasService {
     const pagination = normalizePagination(input.page, input.limit);
     const where = this.buildPublicFeedWhere(input);
 
-    const [data, total] = await this.prisma.$transaction([
+    const [data, total] = await runPaginatedReadQueries(
       this.prisma.ofertaLaboral.findMany({
         where,
         select: publicOfertaSelect,
@@ -147,7 +148,7 @@ export class OfertasService {
         orderBy: [{ publicadoEn: 'desc' }, { creadoEn: 'desc' }],
       }),
       this.prisma.ofertaLaboral.count({ where }),
-    ]);
+    );
 
     return {
       data,
@@ -227,7 +228,7 @@ export class OfertasService {
     const pagination = normalizePagination(input.page, input.limit);
     const where = this.buildMisOfertasWhere(empresaId, input);
 
-    const [data, total] = await this.prisma.$transaction([
+    const [data, total] = await runPaginatedReadQueries(
       this.prisma.ofertaLaboral.findMany({
         where,
         select: privateOfertaSelect,
@@ -236,7 +237,7 @@ export class OfertasService {
         orderBy: [{ actualizadoEn: 'desc' }, { creadoEn: 'desc' }],
       }),
       this.prisma.ofertaLaboral.count({ where }),
-    ]);
+    );
 
     return {
       data,
@@ -482,7 +483,7 @@ export class OfertasService {
     const where = this.buildAdminListWhere(input);
 
     // TODO: auditar visualizacion administrativa de ofertas.
-    const [data, total] = await this.prisma.$transaction([
+    const [data, total] = await runPaginatedReadQueries(
       this.prisma.ofertaLaboral.findMany({
         where,
         select: privateOfertaSelect,
@@ -491,7 +492,7 @@ export class OfertasService {
         orderBy: [{ actualizadoEn: 'desc' }, { creadoEn: 'desc' }],
       }),
       this.prisma.ofertaLaboral.count({ where }),
-    ]);
+    );
 
     return {
       data,

@@ -17,6 +17,7 @@ import { AuditoriaService } from '../auditoria/auditoria.service';
 import {
   buildPaginationMeta,
   normalizePagination,
+  runPaginatedReadQueries,
 } from '../common/utils/pagination.util';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -318,7 +319,7 @@ export class PostulacionesService {
       ...(input.estado ? { estado: input.estado } : {}),
     };
 
-    const [data, total] = await this.prisma.$transaction([
+    const [data, total] = await runPaginatedReadQueries(
       this.prisma.postulacion.findMany({
         where,
         select: postulacionResumenSelect,
@@ -327,7 +328,7 @@ export class PostulacionesService {
         orderBy: [{ postuladoEn: 'desc' }, { creadoEn: 'desc' }],
       }),
       this.prisma.postulacion.count({ where }),
-    ]);
+    );
 
     return {
       data,
@@ -365,7 +366,7 @@ export class PostulacionesService {
     };
 
     // TODO: auditar consulta de postulantes por empresa.
-    const [data, total] = await this.prisma.$transaction([
+    const [data, total] = await runPaginatedReadQueries(
       this.prisma.postulacion.findMany({
         where,
         select: {
@@ -387,7 +388,7 @@ export class PostulacionesService {
         orderBy: [{ postuladoEn: 'desc' }, { creadoEn: 'desc' }],
       }),
       this.prisma.postulacion.count({ where }),
-    ]);
+    );
 
     return {
       data,
@@ -513,7 +514,7 @@ export class PostulacionesService {
     };
 
     // TODO: auditar consulta administrativa de postulaciones.
-    const [data, total] = await this.prisma.$transaction([
+    const [data, total] = await runPaginatedReadQueries(
       this.prisma.postulacion.findMany({
         where,
         select: {
@@ -549,7 +550,7 @@ export class PostulacionesService {
         orderBy: [{ postuladoEn: 'desc' }, { creadoEn: 'desc' }],
       }),
       this.prisma.postulacion.count({ where }),
-    ]);
+    );
 
     return {
       data,

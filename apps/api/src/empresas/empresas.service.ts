@@ -16,6 +16,7 @@ import { AuditoriaService } from '../auditoria/auditoria.service';
 import {
   buildPaginationMeta,
   normalizePagination,
+  runPaginatedReadQueries,
 } from '../common/utils/pagination.util';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -193,7 +194,7 @@ export class EmpresasService {
     const where = this.buildListWhere(input);
 
     // TODO: auditar consulta de listado administrativo de empresas.
-    const [data, total] = await this.prisma.$transaction([
+    const [data, total] = await runPaginatedReadQueries(
       this.prisma.empresa.findMany({
         where,
         select: privateEmpresaSelect,
@@ -202,7 +203,7 @@ export class EmpresasService {
         orderBy: [{ actualizadoEn: 'desc' }, { creadoEn: 'desc' }],
       }),
       this.prisma.empresa.count({ where }),
-    ]);
+    );
 
     return {
       data,

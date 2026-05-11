@@ -20,6 +20,13 @@ export function normalizePagination(page?: number, limit?: number) {
   };
 }
 
+export async function runPaginatedReadQueries<T>(
+  dataQuery: Promise<T>,
+  totalQuery: Promise<number>,
+) {
+  return Promise.all([dataQuery, totalQuery] as const);
+}
+
 export function buildPaginationMeta(
   total: number,
   page: number,

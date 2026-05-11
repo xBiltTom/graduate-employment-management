@@ -13,6 +13,7 @@ import {
 import {
   buildPaginationMeta,
   normalizePagination,
+  runPaginatedReadQueries,
 } from '../common/utils/pagination.util';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -608,7 +609,7 @@ export class EstadisticasService {
       ...(input.estado ? { estado: input.estado } : {}),
     };
 
-    const [data, total] = await this.prisma.$transaction([
+    const [data, total] = await runPaginatedReadQueries(
       this.prisma.ofertaLaboral.findMany({
         where,
         select: {
@@ -626,7 +627,7 @@ export class EstadisticasService {
         orderBy: [{ actualizadoEn: 'desc' }, { creadoEn: 'desc' }],
       }),
       this.prisma.ofertaLaboral.count({ where }),
-    ]);
+    );
 
     return {
       data: data.map((oferta) => {
